@@ -11,8 +11,8 @@ module {
 
     public type Order ={
         id: Nat;
-        from: Principal;
-        to: Principal;
+        buyer: Principal;
+        seller: Principal;
         amount: Float;
         currency:{
             #ICP;
@@ -25,7 +25,7 @@ module {
             #USDT;
             #USDC;
         };
-        acount: Text;
+        account: Text;
         blockin: Nat64; 
         blockout: Nat64;
         memo: Text;
@@ -33,12 +33,13 @@ module {
         status:{
             #new;
             #deposited;
-            #deliveried;
+            #delivered;
             #released;
             #refunded;
             #closed;
+            #canceled;
         };
-        releasedtime: Int;
+        updatetime: Int;
         expiration: Int;
     };
 
