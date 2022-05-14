@@ -98,35 +98,180 @@ actor class EscrowService() = this {
     };
     //buyer deposit fund in escrow, and change status to #deposited
     public shared({caller}) func deposit(orderid: Nat): async Result.Result<Nat,Text>{
-        //transfer to escrow
+       
+        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+            })[0];
+        
+        //only buyer and new  order can deposit
+        if (order.id == orderid and order.status == #new and order.buyer == caller){
+            orders.put(orderid,{
+                id = orderid;
+                buyer = order.buyer;
+                seller = order.seller;
+                amount = order.amount;
+                account= order.account;
+                blockin = order.blockin;
+                blockout = order.blockout;
+                currency = order.currency;
+                createtime = order.createtime;
+                memo = order.memo;
+                releasedtime = 0;
+                status = #deposited;
+                updatetime = Time.now();
+                expiration = order.expiration;
+            });
+
+             //transfer to escrow
+        };
         #ok(1);
     };
 
     //seller deliver item to buyer, and change status to #delivered
     public shared({caller}) func deliver(orderid: Nat): async Result.Result<Nat,Text>{
         //update status with delivered
+        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+            })[0];
+        
+        //only seller and deposited order can changed to deliver
+        if (order.id == orderid and order.status == #deposited and order.seller == caller){
+            orders.put(orderid,{
+                id = orderid;
+                buyer = order.buyer;
+                seller = order.seller;
+                amount = order.amount;
+                account= order.account;
+                blockin = order.blockin;
+                blockout = order.blockout;
+                currency = order.currency;
+                createtime = order.createtime;
+                memo = order.memo;
+                releasedtime = 0;
+                status = #delivered;
+                updatetime = Time.now();
+                expiration = order.expiration;
+            });
+        };
         #ok(1);
     };
 
     //buyer check the item received, call confirm to change status to #released 
      public shared({caller}) func confirm(orderid: Nat): async Result.Result<Nat,Text>{
          //release fund
+        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+            })[0];
+        
+        //only buyer and delivered order can release
+        if (order.id == orderid and order.status == #delivered and order.buyer == caller){
+            orders.put(orderid,{
+                id = orderid;
+                buyer = order.buyer;
+                seller = order.seller;
+                amount = order.amount;
+                account= order.account;
+                blockin = order.blockin;
+                blockout = order.blockout;
+                currency = order.currency;
+                createtime = order.createtime;
+                memo = order.memo;
+                releasedtime =  Time.now();
+                status = #released;
+                updatetime = Time.now();
+                expiration = order.expiration;
+            });
+        };
         #ok(1);
     };
     //seller 
      public shared({caller}) func close(orderid: Nat): async Result.Result<Nat,Text>{
         //update status with closed 
+       let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+            })[0];
+        
+        //only released orde can close 
+        if (order.id == orderid and order.status == #released){
+            orders.put(orderid,{
+                id = orderid;
+                buyer = order.buyer;
+                seller = order.seller;
+                amount = order.amount;
+                account= order.account;
+                blockin = order.blockin;
+                blockout = order.blockout;
+                currency = order.currency;
+                createtime = order.createtime;
+                memo = order.memo;
+                releasedtime = 0;
+                status = #closed;
+                updatetime = Time.now();
+                expiration = order.expiration;
+            });
+        };
         #ok(1);
     };
 
 
     //buyer submit cancel request if status is #deposited
      public shared({caller}) func cancel(orderid: Nat): async Result.Result<Nat,Text>{
-         //refund
+        
+        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
+            (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+        })[0];
+        
+        //only released orde can close 
+        if (order.id == orderid and order.status == #deposited){
+            //update order status 
+            orders.put(orderid,{
+                id = orderid;
+                buyer = order.buyer;
+                seller = order.seller;
+                amount = order.amount;
+                account= order.account;
+                blockin = order.blockin;
+                blockout = order.blockout;
+                currency = order.currency;
+                createtime = order.createtime;
+                memo = order.memo;
+                status = #canceled;
+                updatetime = Time.now();
+                expiration = order.expiration;
+            });
+            
+            //refund
+        };
         #ok(1);
     };
+
     //seller refund to buyer anytime
     public shared({caller}) func refund(orderid: Nat): async Result.Result<Nat, Text>{
+        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
+            (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+        })[0];
+        
+        //only released orde can close 
+        if (order.id == orderid and order.seller == caller and order.status != #new){
+            //update order status 
+            orders.put(orderid,{
+                id = orderid;
+                buyer = order.buyer;
+                seller = order.seller;
+                amount = order.amount;
+                account= order.account;
+                blockin = order.blockin;
+                blockout = order.blockout;
+                currency = order.currency;
+                createtime = order.createtime;
+                memo = order.memo;
+                status = #refunded;
+                updatetime = Time.now();
+                expiration = order.expiration;
+            });
+            
+            //refund
+        };
         #ok(1);
     };
 
@@ -135,6 +280,13 @@ actor class EscrowService() = this {
          Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
                 (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
             })
+    };
+    
+    //fetch user's orde by order id
+    public shared({caller}) func getOrder(orderid: Nat): async Order{
+         Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+            })[0]
     };
 
     public shared({caller}) func getAllOrders(): async [Order]{
