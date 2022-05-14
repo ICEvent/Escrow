@@ -247,7 +247,7 @@ actor class EscrowService() = this {
         })[0];
         
         //only released orde can close 
-        if (order.id == orderid and order.status == #deposited){
+        if (order.id == orderid and (order.status == #deposited or order.status == #new)and order.buyer == caller){
             //update order status 
             orders.put(orderid,{
                 id = orderid;
@@ -272,6 +272,9 @@ actor class EscrowService() = this {
             });
             
             //refund
+            if (order.status == #deposited and order.deposittime > 0){
+                // refund
+            }
         };
         #ok(1);
     };
