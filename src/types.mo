@@ -39,6 +39,12 @@ module {
             #closed;
             #canceled;
         };
+        deposittime: Int;
+        delivertime: Int;
+        releasetime: Int;
+        refundtime: Int;
+        closetime: Int;
+        canceltime: Int;
         updatetime: Int;
         expiration: Int;
     };
