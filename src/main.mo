@@ -65,7 +65,7 @@ actor class EscrowService() = this {
 
    
     //buyer create a new order
-    public shared({caller}) func create(seller: Principal, amount: Float, memo: Text, expiration: Int) : async Result.Result<Nat,Text>{
+    public shared({caller}) func create(seller: Principal, amount: Nat64, memo: Text, expiration: Int) : async Result.Result<Nat,Text>{
 
         if(Principal.isAnonymous(caller)){
 
@@ -104,37 +104,54 @@ actor class EscrowService() = this {
     //buyer deposit fund in escrow, and change status to #deposited
     public shared({caller}) func deposit(orderid: Nat): async Result.Result<Nat,Text>{
        
-        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
-               (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
-            })[0];
-        
-        //only buyer and new  order can deposit
-        if (order.id == orderid and order.status == #new and order.buyer == caller){
-            orders.put(orderid,{
-                id = orderid;
-                buyer = order.buyer;
-                seller = order.seller;
-                amount = order.amount;
-                account= order.account;
-                blockin = order.blockin;
-                blockout = order.blockout;
-                currency = order.currency;
-                createtime = order.createtime;
-                memo = order.memo;
-                status = #deposited;
-                deposittime = Time.now();
-                delivertime = order.delivertime;
-                releasetime =  order.releasetime;
-                refundtime =  order.refundtime;
-                closetime =  order.closetime;
-                canceltime =  order.canceltime;
-                updatetime = Time.now();
-                expiration = order.expiration;
+        let order =  Array.find<Order>(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) 
             });
-
-             //transfer to escrow
+        
+        switch(order){
+            case(?order){
+                //check expired time
+                if(Int.less(order.expiration * 1_000_000_000,Time.now())){
+                    #err("order is expired")
+                }else{
+                    //check account balance               
+                    let balance = await accountBalance(order.account);
+                    if(Nat64.equal(balance.e8s,0)){
+                        #err("no deposit")
+                    }else if(Nat64.less(balance.e8s,  order.amount)){
+                        #err("deposit (" # Nat64.toText(balance.e8s) # ") is less order ammount" # Nat64.toText(order.amount))
+                    }else{
+                        orders.put(orderid,{
+                                id = orderid;
+                                buyer = order.buyer;
+                                seller = order.seller;
+                                amount = order.amount;
+                                account= order.account;
+                                blockin = order.blockin;
+                                blockout = order.blockout;
+                                currency = order.currency;
+                                createtime = order.createtime;
+                                memo = order.memo;
+                                status = #deposited;
+                                deposittime = Time.now();
+                                delivertime = order.delivertime;
+                                releasetime =  order.releasetime;
+                                refundtime =  order.refundtime;
+                                closetime =  order.closetime;
+                                canceltime =  order.canceltime;
+                                updatetime = Time.now();
+                                expiration = order.expiration;
+                            });
+                        #ok(1);
+                    }  
+                }
+                 
+            };
+            case(_){
+                #err("no order found")
+            };
         };
-        #ok(1);
+      
     };
 
     //seller deliver item to buyer, and change status to #delivered
@@ -318,7 +335,7 @@ actor class EscrowService() = this {
     //fetch user's orders with status: #new; #deposited; #deliveried; 
     public shared({caller}) func getOrders(): async [Order]{
          Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
-                (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+                Int.less(o.expiration * 1_000_000_000,Time.now()) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
             })
     };
     

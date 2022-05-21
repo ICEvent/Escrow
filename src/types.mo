@@ -13,7 +13,7 @@ module {
         id: Nat;
         buyer: Principal;
         seller: Principal;
-        amount: Float;
+        amount: Nat64;
         currency:{
             #ICP;
             #ICET;
