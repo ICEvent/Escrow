@@ -13,22 +13,11 @@ module {
         id: Nat;
         buyer: Principal;
         seller: Principal;
+        memo: Text;
         amount: Nat64;
-        currency:{
-            #ICP;
-            #ICET;
-            #ICEG;
-            #BTC;
-            #ETH;
-            #DOT;
-            #ADA;
-            #USDT;
-            #USDC;
-        };
         account: Text;
         blockin: Nat64; 
         blockout: Nat64;
-        memo: Text;
         createtime: Int;
         status:{
             #new;
@@ -39,12 +28,7 @@ module {
             #closed;
             #canceled;
         };
-        deposittime: Int;
-        delivertime: Int;
-        releasetime: Int;
-        refundtime: Int;
-        closetime: Int;
-        canceltime: Int;
+        
         updatetime: Int;
         expiration: Int;
     };

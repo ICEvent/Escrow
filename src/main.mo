@@ -78,22 +78,16 @@ actor class EscrowService() = this {
                 id = orderid;
                 buyer = caller;
                 seller = seller;
+                memo = memo;
                 amount = amount;
                 account= getNewAccountId();
                 blockin = 0;
                 blockout = 0;
-                currency = #ICP;
-                createtime = Time.now();
-                memo = memo;
                 status = #new;
-                deposittime = 0;
-                delivertime = 0;
-                releasetime = 0;
-                refundtime = 0;
-                closetime = 0;
-                canceltime = 0;
-                updatetime = 0;
                 expiration = expiration;
+                createtime = Time.now();
+                updatetime = Time.now();
+
             });
 
             nextOrderId := nextOrderId+1;
@@ -125,22 +119,16 @@ actor class EscrowService() = this {
                                 id = orderid;
                                 buyer = order.buyer;
                                 seller = order.seller;
+                                memo = order.memo;
                                 amount = order.amount;
                                 account= order.account;
                                 blockin = order.blockin;
                                 blockout = order.blockout;
-                                currency = order.currency;
-                                createtime = order.createtime;
-                                memo = order.memo;
-                                status = #deposited;
-                                deposittime = Time.now();
-                                delivertime = order.delivertime;
-                                releasetime =  order.releasetime;
-                                refundtime =  order.refundtime;
-                                closetime =  order.closetime;
-                                canceltime =  order.canceltime;
-                                updatetime = Time.now();
                                 expiration = order.expiration;
+                                createtime = order.createtime;
+
+                                status = #deposited;
+                                updatetime = Time.now();
                             });
                         #ok(1);
                     }  
@@ -167,22 +155,16 @@ actor class EscrowService() = this {
                 id = orderid;
                 buyer = order.buyer;
                 seller = order.seller;
+                memo = order.memo;
                 amount = order.amount;
                 account= order.account;
                 blockin = order.blockin;
                 blockout = order.blockout;
-                currency = order.currency;
+                expiration = order.expiration;
                 createtime = order.createtime;
-                memo = order.memo;
-                deposittime = order.deposittime;
-                delivertime =  Time.now();
-                releasetime =  order.releasetime;
-                refundtime =  order.refundtime;
-                closetime =  order.closetime;
-                canceltime =  order.canceltime;
+
                 status = #delivered;
                 updatetime = Time.now();
-                expiration = order.expiration;
             });
         };
         #ok(1);
@@ -201,22 +183,16 @@ actor class EscrowService() = this {
                 id = orderid;
                 buyer = order.buyer;
                 seller = order.seller;
+                memo = order.memo;
                 amount = order.amount;
                 account= order.account;
                 blockin = order.blockin;
                 blockout = order.blockout;
-                currency = order.currency;
                 createtime = order.createtime;
-                memo = order.memo;
-                deposittime = order.deposittime;
-                delivertime =  order.delivertime;
-                releasetime =  Time.now();
-                refundtime =  order.refundtime;
-                closetime =  order.closetime;
-                canceltime =  order.canceltime;
+                expiration = order.expiration;
+
                 status = #released;
                 updatetime = Time.now();
-                expiration = order.expiration;
             });
         };
         #ok(1);
@@ -234,22 +210,16 @@ actor class EscrowService() = this {
                 id = orderid;
                 buyer = order.buyer;
                 seller = order.seller;
+                memo = order.memo;
                 amount = order.amount;
                 account= order.account;
                 blockin = order.blockin;
                 blockout = order.blockout;
-                currency = order.currency;
                 createtime = order.createtime;
-                memo = order.memo;
-                deposittime = order.deposittime;
-                delivertime =  order.delivertime;
-                releasetime =  order.releasetime;
-                refundtime =  order.refundtime;
-                closetime =  Time.now();
-                canceltime =  order.canceltime;
+                expiration = order.expiration;
+
                 status = #closed;
                 updatetime = Time.now();
-                expiration = order.expiration;
             });
         };
         #ok(1);
@@ -270,26 +240,20 @@ actor class EscrowService() = this {
                 id = orderid;
                 buyer = order.buyer;
                 seller = order.seller;
+                memo = order.memo;
                 amount = order.amount;
                 account= order.account;
                 blockin = order.blockin;
                 blockout = order.blockout;
-                currency = order.currency;
                 createtime = order.createtime;
-                memo = order.memo;
-                deposittime = order.deposittime;
-                delivertime =  order.delivertime;
-                releasetime =  order.releasetime;
-                refundtime =  order.refundtime;
-                closetime =  order.closetime;
-                canceltime =  Time.now();
+                expiration = order.expiration;
+
                 status = #canceled;
                 updatetime = Time.now();
-                expiration = order.expiration;
             });
             
             //refund
-            if (order.status == #deposited and order.deposittime > 0){
+            if (order.status == #deposited ){
                 // refund
             }
         };
@@ -309,22 +273,16 @@ actor class EscrowService() = this {
                 id = orderid;
                 buyer = order.buyer;
                 seller = order.seller;
+                memo = order.memo;
                 amount = order.amount;
                 account= order.account;
                 blockin = order.blockin;
                 blockout = order.blockout;
-                currency = order.currency;
                 createtime = order.createtime;
-                memo = order.memo;
-                deposittime = order.deposittime;
-                delivertime =  order.delivertime;
-                releasetime =  order.releasetime;
-                refundtime = Time.now();
-                closetime =  order.closetime;
-                canceltime =  order.canceltime;
+                expiration = order.expiration;
+ 
                 status = #refunded;
                 updatetime = Time.now();
-                expiration = order.expiration;
             });
             
             //refund
