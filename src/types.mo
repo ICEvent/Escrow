@@ -31,8 +31,25 @@ module {
         
         updatetime: Int;
         expiration: Int;
+        comments: [Comment];
+        logs:[Log];
     };
 
+    public type Comment = {
+        user: Principal;
+        comment: Text;
+        ctime: Int;        
+    };
+
+    public type Log = {
+        ltime : Int;
+        log: Text;
+        logger: {
+            #buyer;
+            #seller;
+            #escrow;
+        };
+    };
     // LEDGER
     public type AccountBalanceArgs  = { account : AccountIdText };
     public type Balance               = { e8s     : Nat64     };

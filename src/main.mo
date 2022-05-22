@@ -28,11 +28,12 @@ import Utils        "./utils";
 
 actor class EscrowService() = this {
 
-    stable var nextSubAccount : Nat = 1;
-    stable var nextOrderId : Nat = 1;
-    stable var upgradeOrders: [(Nat,Order)] = [];
+
 
     type Order = Types.Order;
+    type Log = Types.Log;
+    type Comment = Types.Comment;
+
     // transfer fee ICP
     let FEE : Nat64 = 10_000;
 
@@ -60,6 +61,11 @@ actor class EscrowService() = this {
         time        : Time.Time;
     };
 
+    stable var nextSubAccount : Nat = 1;
+    stable var nextOrderId : Nat = 1;
+    stable var upgradeOrders: [(Nat,Order)] = [];
+    
+
     var orders = TrieMap.TrieMap<Nat, Order>(Nat.equal, Hash.hash);
         orders := TrieMap.fromEntries<Nat, Order>(Iter.fromArray(upgradeOrders), Nat.equal, Hash.hash);
 
@@ -74,7 +80,8 @@ actor class EscrowService() = this {
         }else{
             let orderid = nextOrderId;
             
-            orders.put(orderid,{
+            orders.put(orderid,
+            {
                 id = orderid;
                 buyer = caller;
                 seller = seller;
@@ -87,7 +94,12 @@ actor class EscrowService() = this {
                 expiration = expiration;
                 createtime = Time.now();
                 updatetime = Time.now();
-
+                comments = [];
+                logs = [{
+                    ltime = Time.now();
+                    log = "create order";
+                    logger = #buyer;
+                }]
             });
 
             nextOrderId := nextOrderId+1;
@@ -115,7 +127,16 @@ actor class EscrowService() = this {
                     }else if(Nat64.less(balance.e8s,  order.amount)){
                         #err("deposit (" # Nat64.toText(balance.e8s) # ") is less order ammount" # Nat64.toText(order.amount))
                     }else{
-                        orders.put(orderid,{
+                        let log = {
+                            ltime = Time.now();
+                            log = "make deposit";
+                            logger = #buyer;
+                        };
+                        var logs : List.List<Log> = List.fromArray(order.logs);
+                        logs := List.push(log, logs);
+
+                        orders.put(orderid,
+                        {
                                 id = orderid;
                                 buyer = order.buyer;
                                 seller = order.seller;
@@ -129,6 +150,8 @@ actor class EscrowService() = this {
 
                                 status = #deposited;
                                 updatetime = Time.now();
+                                comments = order.comments;
+                                logs = List.toArray(logs);
                             });
                         #ok(1);
                     }  
@@ -151,23 +174,34 @@ actor class EscrowService() = this {
         
         //only seller and deposited order can changed to deliver
         if (order.id == orderid and order.status == #deposited and order.seller == caller){
-            orders.put(orderid,{
-                id = orderid;
-                buyer = order.buyer;
-                seller = order.seller;
-                memo = order.memo;
-                amount = order.amount;
-                account= order.account;
-                blockin = order.blockin;
-                blockout = order.blockout;
-                expiration = order.expiration;
-                createtime = order.createtime;
 
-                status = #delivered;
-                updatetime = Time.now();
-            });
-        };
-        #ok(1);
+                let log = {
+                    ltime = Time.now();
+                    log = "deliver order item";
+                    logger = #seller;
+                };
+                var logs : List.List<Log> = List.fromArray(order.logs);
+                logs := List.push(log, logs);   
+
+                orders.put(orderid,{
+                    id = orderid;
+                    buyer = order.buyer;
+                    seller = order.seller;
+                    memo = order.memo;
+                    amount = order.amount;
+                    account= order.account;
+                    blockin = order.blockin;
+                    blockout = order.blockout;
+                    expiration = order.expiration;
+                    createtime = order.createtime;
+
+                    status = #delivered;
+                    updatetime = Time.now();
+                    comments = order.comments;
+                    logs = order.logs;
+                });
+            };
+            #ok(1);
     };
 
     //buyer check the item received, call confirm to change status to #released 
@@ -179,6 +213,13 @@ actor class EscrowService() = this {
         
         //only buyer and delivered order can release
         if (order.id == orderid and order.status == #delivered and order.buyer == caller){
+                let log = {
+                    ltime = Time.now();
+                    log = "receive the order item";
+                    logger = #buyer;
+                };
+                var logs : List.List<Log> = List.fromArray(order.logs);
+                logs := List.push(log, logs);             
             orders.put(orderid,{
                 id = orderid;
                 buyer = order.buyer;
@@ -193,6 +234,9 @@ actor class EscrowService() = this {
 
                 status = #released;
                 updatetime = Time.now();
+
+                comments = order.comments;
+                logs = order.logs;                
             });
         };
         #ok(1);
@@ -206,6 +250,13 @@ actor class EscrowService() = this {
         
         //only released orde can close 
         if (order.id == orderid and order.status == #released){
+                let log = {
+                    ltime = Time.now();
+                    log = "close order";
+                    logger = #seller;
+                };
+                var logs : List.List<Log> = List.fromArray(order.logs);
+                logs := List.push(log, logs);             
             orders.put(orderid,{
                 id = orderid;
                 buyer = order.buyer;
@@ -220,6 +271,9 @@ actor class EscrowService() = this {
 
                 status = #closed;
                 updatetime = Time.now();
+
+                comments = order.comments;
+                logs = order.logs;                
             });
         };
         #ok(1);
@@ -233,9 +287,27 @@ actor class EscrowService() = this {
             (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
         })[0];
         
-        //only released orde can close 
+       
         if (order.id == orderid and (order.status == #deposited or order.status == #new)and order.buyer == caller){
             //update order status 
+                var logger:{
+                    #buyer;
+                    #seller;
+                    #escrow;
+                } = #escrow;
+                if(order.buyer == caller){
+                    logger:=#buyer;
+                }else if(order.seller == caller){
+                    logger:= #seller;
+                };
+                let log = {
+                    ltime = Time.now();
+                    log = "cancel order";
+                    logger =logger;
+                };
+                var logs : List.List<Log> = List.fromArray(order.logs);
+                logs := List.push(log, logs); 
+
             orders.put(orderid,{
                 id = orderid;
                 buyer = order.buyer;
@@ -250,6 +322,9 @@ actor class EscrowService() = this {
 
                 status = #canceled;
                 updatetime = Time.now();
+
+                comments = order.comments;
+                logs = order.logs;                
             });
             
             //refund
@@ -263,11 +338,18 @@ actor class EscrowService() = this {
     //seller refund to buyer anytime
     public shared({caller}) func refund(orderid: Nat): async Result.Result<Nat, Text>{
         let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
-            (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+            (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited )
         })[0];
         
         //only released orde can close 
         if (order.id == orderid and order.seller == caller and order.status != #new){
+                let log = {
+                    ltime = Time.now();
+                    log = "refund order";
+                    logger = #escrow;
+                };
+                var logs : List.List<Log> = List.fromArray(order.logs);
+                logs := List.push(log, logs); 
             //update order status 
             orders.put(orderid,{
                 id = orderid;
@@ -283,11 +365,57 @@ actor class EscrowService() = this {
  
                 status = #refunded;
                 updatetime = Time.now();
+
+                comments = order.comments;
+                logs = order.logs;                
             });
             
             //refund
         };
         #ok(1);
+    };
+
+    public shared({caller}) func comment(orderid: Nat, comment: Text): async Result.Result<Nat, Text>{
+        let order = Array.find<Order>(Iter.toArray(orders.vals()), func(o: Order):Bool{
+            o.id == orderid
+        });
+        switch(order){
+            case(?order){
+                if(order.buyer == caller or order.seller == caller){
+                    var comments:List.List<Comment> = List.fromArray(order.comments);
+                    comments := List.push({
+                        ctime = Time.now();
+                        comment = comment;
+                        user = caller;
+                    }, comments);
+                    orders.put(orderid,{
+                        id = order.id;
+                        buyer = order.buyer;
+                        seller = order.seller;
+                        memo = order.memo;
+                        amount = order.amount;
+                        account= order.account;
+                        blockin = order.blockin;
+                        blockout = order.blockout;
+                        createtime = order.createtime;
+                        expiration = order.expiration;
+        
+                        status = order.status;
+                        updatetime = order.updatetime;
+
+                        comments = List.toArray(comments);
+                        logs = order.logs;                
+                    });
+                    #ok(1)
+                }else{
+                    #err("no permission")
+                }
+            };
+            case(_){
+                #err("no order found")
+            }
+        };
+
     };
 
     //fetch user's orders with status: #new; #deposited; #deliveried; 
