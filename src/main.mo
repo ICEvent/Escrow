@@ -21,6 +21,8 @@ import Time         "mo:base/Time";
 import Trie         "mo:base/Trie";
 import TrieMap "mo:base/TrieMap";
 
+import CRC32 "CRC32";
+import SHA224 "SHA224";
 import Account      "./account";
 import Hex          "./hex";
 import Types        "./types";
@@ -36,6 +38,7 @@ actor class EscrowService() = this {
 
     // transfer fee ICP
     let FEE : Nat64 = 10_000;
+    let E8S : Nat64 = 10_000_000;
 
     type AccountId = Types.AccountId; // Blob
     type AccountIdText = Types.AccountIdText;
@@ -43,18 +46,14 @@ actor class EscrowService() = this {
     type Subaccount = Types.Subaccount; // Nat
     type SubaccountBlob = Types.SubaccountBlob;
     type SubaccountNat8Arr = Types.SubaccountNat8Arr;
-
+    type TransferRequest = Types.TransferRequest;
+    type AccountIdentifier = Types.AccountIdentifier;
+    type EscrowAccount = Types.EscrowAccount;
     
     // LEDGER
-    type AccountBalanceArgs = Types.AccountBalanceArgs;
-    type TransferRequest = Types.TransferRequest;
-    type Balance = Types.Balance;
-    type SendArgs = Types.SendArgs;
-    let Ledger = actor "ryjl3-tyaaa-aaaaa-aaaba-cai" : actor { 
-        send_dfx : shared SendArgs -> async Nat64;
-        account_balance_dfx : shared query AccountBalanceArgs -> async Balance; 
-    };
 
+
+    let Ledger : Types.Ledger = actor("ryjl3-tyaaa-aaaaa-aaaba-cai");
 
     type AccountIdAndTime = {
         accountId   : AccountIdText;
@@ -121,7 +120,7 @@ actor class EscrowService() = this {
                     #err("order is expired")
                 }else{
                     //check account balance               
-                    let balance = await accountBalance(order.account);
+                    let balance = await accountBalance(order.account.id);
                     if(Nat64.equal(balance.e8s,0)){
                         #err("no deposit")
                     }else if(Nat64.less(balance.e8s,  order.amount)){
@@ -283,56 +282,73 @@ actor class EscrowService() = this {
     //buyer submit cancel request if status is #deposited
      public shared({caller}) func cancel(orderid: Nat): async Result.Result<Nat,Text>{
         
-        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
-            (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
-        })[0];
-        
+        let order =  Array.find<Order>(Iter.toArray(orders.vals()), func(o: Order):Bool{
+            (o.id == orderid) and (o.buyer == caller or o.seller == caller)
+        });
+       switch(order){
+           case(?order){
+               if((order.status == #deposited or order.status == #new) and order.buyer == caller){
+                   //refund first
+                    let r = await transfer({
+                            memo = 1;
+                            from = order.account.index;
+                            to = Account.getAccountTextId(caller,0);
+                            amount = order.amount * E8S - FEE;
+                        });
+                    switch(r){
+                        case(#ok(block)){
+                                var logger:{
+                                    #buyer;
+                                    #seller;
+                                    #escrow;
+                                } = #escrow;
+                                if(order.buyer == caller){
+                                    logger:=#buyer;
+                                }else if(order.seller == caller){
+                                    logger:= #seller;
+                                };
+                                let log = {
+                                    ltime = Time.now();
+                                    log = "cancel order";
+                                    logger =logger;
+                                };
+                                var logs : List.List<Log> = List.fromArray(order.logs);
+                                logs := List.push(log, logs); 
+
+                            orders.put(orderid,{
+                                id = orderid;
+                                buyer = order.buyer;
+                                seller = order.seller;
+                                memo = order.memo;
+                                amount = order.amount;
+                                account= order.account;
+                                blockin = order.blockin;
+                                blockout = order.blockout;
+                                createtime = order.createtime;
+                                expiration = order.expiration;
+
+                                status = #canceled;
+                                updatetime = Time.now();
+
+                                comments = order.comments;
+                                logs = order.logs;                
+                            });
+                            #ok(1)
+                        };
+                        case(#err(e)){
+                            #err(e)
+                        };
+                    }
+
+               }else{
+                   #err("no cancel allowed")
+               }
+           };
+           case(_){
+               #err("no order found")
+           };
+       };
        
-        if (order.id == orderid and (order.status == #deposited or order.status == #new)and order.buyer == caller){
-            //update order status 
-                var logger:{
-                    #buyer;
-                    #seller;
-                    #escrow;
-                } = #escrow;
-                if(order.buyer == caller){
-                    logger:=#buyer;
-                }else if(order.seller == caller){
-                    logger:= #seller;
-                };
-                let log = {
-                    ltime = Time.now();
-                    log = "cancel order";
-                    logger =logger;
-                };
-                var logs : List.List<Log> = List.fromArray(order.logs);
-                logs := List.push(log, logs); 
-
-            orders.put(orderid,{
-                id = orderid;
-                buyer = order.buyer;
-                seller = order.seller;
-                memo = order.memo;
-                amount = order.amount;
-                account= order.account;
-                blockin = order.blockin;
-                blockout = order.blockout;
-                createtime = order.createtime;
-                expiration = order.expiration;
-
-                status = #canceled;
-                updatetime = Time.now();
-
-                comments = order.comments;
-                logs = order.logs;                
-            });
-            
-            //refund
-            if (order.status == #deposited ){
-                // refund
-            }
-        };
-        #ok(1);
     };
 
     //seller refund to buyer anytime
@@ -418,10 +434,14 @@ actor class EscrowService() = this {
 
     };
 
+
+    public shared({caller}) func checkBalance(account:Text): async Types.ICP{
+        await accountBalance(account);
+    };
     //fetch user's orders with status: #new; #deposited; #deliveried; 
     public shared({caller}) func getOrders(): async [Order]{
          Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
-                Int.less(o.expiration * 1_000_000_000,Time.now()) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+                Int.greater(o.expiration * 1_000_000_000,Time.now()) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
             })
     };
     
@@ -438,39 +458,58 @@ actor class EscrowService() = this {
             })
     };
 
-    func getNewAccountId () : AccountIdText {       
+
+
+    func getNewAccountId () : EscrowAccount {       
 
         let subaccount = nextSubAccount;
         nextSubAccount += 1;
         let subaccountBlob : SubaccountBlob = Utils.subToSubBlob(subaccount);
         
-        let accountIdText = Utils.accountIdToHex(Account.getAccountId(getPrincipal(), subaccountBlob));
-        return accountIdText;
+        let accountIdText = Utils.accountIdToHex(Account.accountIdentifier(getPrincipal(), subaccountBlob));
+        return {
+            index = subaccount;
+            id = accountIdText;
+        };
     };
 
+
+    public shared({caller}) func getMyBalanceBySub(sub: Nat): async Types.ICP{
+        let sublob = Utils.subToSubBlob(sub);
+         await Ledger.account_balance({ account = Account.accountIdentifier(caller,sublob) });
+    };
+
+    public shared func getBalanceBySub(sub: Nat): async Types.ICP{
+        let sublob = Utils.subToSubBlob(sub);
+         await Ledger.account_balance({ account = Account.accountIdentifier(getPrincipal(),sublob) });
+    };
 
     // LEDGER WRAPPERS
-    func accountBalance (account: AccountIdText) : async Balance {
-        await Ledger.account_balance_dfx({ account = account });
+    public shared func accountBalance (account: AccountIdText) : async Types.ICP {
+        
+        await Ledger.account_balance({ account = Utils.hexToAccountId(account) });
     };
 
-   
 
     func transfer (r: TransferRequest) : async Result.Result<Nat64, Text> {
-        try {
-            let blockHeight = await Ledger.send_dfx({
-                memo = r.memo;
-                from_subaccount = r.from;
-                to = r.to;
-                amount = r.amount;
-                fee = { e8s = FEE };
-                created_at_time = ?Time.now();
-            });
-            
-            return #ok(blockHeight);
-        } catch (e) {
-           
-            return #err("failed to transfer");
+       let res = await Ledger.transfer({
+          memo = r.memo;
+          from_subaccount = ?Utils.subToSubBlob(r.from);
+          to = Blob.fromArray(Hex.decode(r.to));
+          amount = { e8s = r.amount};
+          fee = { e8s = 10_000 };
+          created_at_time = ?{ timestamp_nanos = Nat64.fromNat(Int.abs(Time.now())) };
+        });
+        switch (res) {
+          case (#Ok(blockIndex)) {
+            #ok(blockIndex)
+          };
+          case (#Err(#InsufficientFunds { balance })) {
+            throw Error.reject("Top me up! The balance is only " # debug_show balance # " e8s");
+          };
+          case (#Err(other)) {
+            throw Error.reject("Unexpected error: " # debug_show other);
+          };
         };
     };
 

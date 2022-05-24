@@ -8,7 +8,7 @@ import Types    "./types";
 
 module {
 
-    type AccountId = Types.AccountId;
+    type AccountId = Types.AccountIdentifier;
     type AccountIdText = Types.AccountIdText;
     type Subaccount = Types.Subaccount;
     type SubaccountBlob = Types.SubaccountBlob;

@@ -4,7 +4,6 @@
       "main": "src/main.mo",
       "type": "motoko"
     }
-    
   },
   "defaults": {
     "build": {
