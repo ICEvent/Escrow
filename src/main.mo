@@ -169,80 +169,182 @@ actor class EscrowService() = this {
     //seller deliver item to buyer, and change status to #delivered
     public shared({caller}) func deliver(orderid: Nat): async Result.Result<Nat,Text>{
         //update status with delivered
-        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
-               (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
-            })[0];
-        
+        let order =  Array.find<Order>(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) 
+            });
+        //and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
         //only seller and deposited order can changed to deliver
-        if (order.id == orderid and order.status == #deposited and order.seller == caller){
+        switch(order){
+            case(?order){
+                if (order.status == #deposited and order.seller == caller and order.lockedby==caller){
+                        let log = {
+                            ltime = Time.now();
+                            log = "deliver order item";
+                            logger = #seller;
+                        };
+                        var logs : List.List<Log> = List.fromArray(order.logs);
+                        logs := List.push(log, logs);   
 
-                let log = {
-                    ltime = Time.now();
-                    log = "deliver order item";
-                    logger = #seller;
+                        orders.put(orderid,{
+                            id = orderid;
+                            buyer = order.buyer;
+                            seller = order.seller;
+                            memo = order.memo;
+                            amount = order.amount;
+                            account= order.account;
+                            blockin = order.blockin;
+                            blockout = order.blockout;
+                            expiration = order.expiration;
+                            createtime = order.createtime;
+
+                            lockedby = order.buyer;
+                            status = #delivered;
+                            updatetime = Time.now();
+                            comments = order.comments;
+                            logs = order.logs;
+                        });
+                         #ok(1);
+                  
+                }else{
+                    #err("status is not right or no permission")
                 };
-                var logs : List.List<Log> = List.fromArray(order.logs);
-                logs := List.push(log, logs);   
-
-                orders.put(orderid,{
-                    id = orderid;
-                    buyer = order.buyer;
-                    seller = order.seller;
-                    memo = order.memo;
-                    amount = order.amount;
-                    account= order.account;
-                    blockin = order.blockin;
-                    blockout = order.blockout;
-                    expiration = order.expiration;
-                    createtime = order.createtime;
-
-                    lockedby = order.buyer;
-                    status = #delivered;
-                    updatetime = Time.now();
-                    comments = order.comments;
-                    logs = order.logs;
-                });
             };
-            #ok(1);
+            case(_){
+                #err("no order found")
+            };
+        };
+       
     };
 
     //buyer check the item received, call confirm to change status to #released 
-     public shared({caller}) func received(orderid: Nat): async Result.Result<Nat,Text>{
-         //release fund
-        let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
-               (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
-            })[0];
-        
-        //only buyer and delivered order can release
-        if (order.id == orderid and order.status == #delivered and order.buyer == caller){
-                let log = {
-                    ltime = Time.now();
-                    log = "receive the order item";
-                    logger = #buyer;
-                };
-                var logs : List.List<Log> = List.fromArray(order.logs);
-                logs := List.push(log, logs);             
-            orders.put(orderid,{
-                id = orderid;
-                buyer = order.buyer;
-                seller = order.seller;
-                memo = order.memo;
-                amount = order.amount;
-                account= order.account;
-                blockin = order.blockin;
-                blockout = order.blockout;
-                createtime = order.createtime;
-                expiration = order.expiration;
-                lockedby = getPrincipal();
-                status = #released;
-                updatetime = Time.now();
-
-                comments = order.comments;
-                logs = order.logs;                
+     public shared({caller}) func receive(orderid: Nat): async Result.Result<Nat,Text>{
+         
+        let order =  Array.find<Order>(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) 
             });
+
+        switch(order){
+            case(?order){
+              if (order.status == #delivered and order.buyer == caller and order.lockedby==caller){
+                    let log = {
+                        ltime = Time.now();
+                        log = "receive the order item";
+                        logger = #buyer;
+                    };
+                    var logs : List.List<Log> = List.fromArray(order.logs);
+                    logs := List.push(log, logs);  
+                                
+                    orders.put(orderid,{
+                        id = orderid;
+                        buyer = order.buyer;
+                        seller = order.seller;
+                        memo = order.memo;
+                        amount = order.amount;
+                        account= order.account;
+                        blockin = order.blockin;
+                        blockout = order.blockout;
+                        createtime = order.createtime;
+                        expiration = order.expiration;
+
+                        lockedby = getPrincipal();
+                        status = #received;
+                        updatetime = Time.now();
+
+                        comments = order.comments;
+                        logs = order.logs;                
+                    });
+                };
+                #ok(1);
+            };
+            case(_){
+                #err("no order found")
+            }
         };
-        #ok(1);
+        
     };
+
+    //release fund
+    public shared({caller}) func release(orderid: Nat): async Result.Result<Nat,Text>{
+        
+        let order =  Array.find<Order>(Iter.toArray(orders.vals()), func(o: Order):Bool{
+               (o.id == orderid) 
+            });
+
+        switch(order){
+            case(?order){
+              if (order.status == #received and order.seller == caller and order.lockedby==getPrincipal()){
+                  //transfer fund
+                  //1 transfer FEE to escrow first
+                //   let feetrans = await transfer({
+                //             memo = 1;
+                //             from = order.account.index;
+                //             to = Account.getAccountTextId(getPrincipal(),0);
+                //             amount = FEE + FEE;
+                //         });
+                //    switch(feetrans){
+                //        case(#ok(block)){ //release fund to seller
+                            let balance = await getBalanceBySub(order.account.index);
+
+                             let trans = await transfer({
+                                        memo = 1;
+                                        from = order.account.index;
+                                        to = Account.getAccountTextId(caller,0);
+                                        amount = balance.e8s-FEE;
+                                    });
+                                switch(trans){
+                                    case(#ok(block)){
+                                        let log = {
+                                            ltime = Time.now();
+                                            log = "release fund to seller";
+                                            logger = #escrow;
+                                        };
+                                        var logs : List.List<Log> = List.fromArray(order.logs);
+                                        logs := List.push(log, logs);  
+                                                    
+                                        orders.put(orderid,{
+                                                id = orderid;
+                                                buyer = order.buyer;
+                                                seller = order.seller;
+                                                memo = order.memo;
+                                                amount = order.amount;
+                                                account= order.account;
+                                                blockin = order.blockin;
+                                                blockout = order.blockout;
+                                                createtime = order.createtime;
+                                                expiration = order.expiration;
+
+                                                lockedby = getPrincipal();
+                                                status = #released;
+                                                updatetime = Time.now();
+
+                                                comments = order.comments;
+                                                logs = order.logs;                
+                                            });
+                                        
+                                        #ok(1);
+                                    };
+                                    case(#err(e)){
+                                        #err("failed to release fund" # e);
+                                    };
+                                };    
+                //        };
+                //         case(#err(e)){
+                //             #err("failed to transfer fee to escrow :" # e);
+                //         };
+
+                //    };
+              }else{
+                  #err("wrong status or no permission")
+              }
+                                 
+            };
+            case(_){
+                #err("no order found")
+            }
+        };
+        
+    };
+   
     //seller 
      public shared({caller}) func close(orderid: Nat): async Result.Result<Nat,Text>{
         //update status with closed 
@@ -252,6 +354,7 @@ actor class EscrowService() = this {
         
         //only released orde can close 
         if (order.id == orderid and order.status == #released){
+            
                 let log = {
                     ltime = Time.now();
                     log = "close order";
@@ -291,70 +394,86 @@ actor class EscrowService() = this {
        switch(order){
            case(?order){
                if((order.status == #deposited or order.status == #new) and order.buyer == caller and order.lockedby == caller){
-                   var isRefunded = false;
-                   var err = "";
-                   //refund first
-                   if(order.status == #deposited){
-                    let r = await transfer({
-                            memo = 1;
-                            from = order.account.index;
-                            to = Account.getAccountTextId(caller,0);
-                            amount = order.amount * E8S;
-                        });
-                    switch(r){
-                        case(#ok(block)){
-                            isRefunded := true;
-                        };
-                        case(#err(e)){
-                            err := e;
-                        };
-                    };
-                   }else{
-                       isRefunded := true;
-                   };
 
-                   if(isRefunded){
-                        var logger:{
-                                    #buyer;
-                                    #seller;
-                                    #escrow;
-                                } = #escrow;
-                                if(order.buyer == caller){
-                                    logger:=#buyer;
-                                }else if(order.seller == caller){
-                                    logger:= #seller;
+                // let feetrans = await transfer({
+                //             memo = 1;
+                //             from = order.account.index;
+                //             to = Account.getAccountTextId(getPrincipal(),0);
+                //             amount = FEE + FEE;
+                //         });
+                //    switch(feetrans){
+                //        case(#ok(block)){ //release fund to seller
+                            var isRefunded = false;
+                            var err = "";
+                            //refund first
+                            if(order.status == #deposited){
+                                let balance = await getBalanceBySub(order.account.index);
+
+                                let r = await transfer({
+                                        memo = 1;
+                                        from = order.account.index;
+                                        to = Account.getAccountTextId(caller,0);
+                                        amount = balance.e8s-FEE;
+                                    });
+                                switch(r){
+                                    case(#ok(block)){
+                                        isRefunded := true;
+                                    };
+                                    case(#err(e)){
+                                        err := e;
+                                    };
                                 };
-                                let log = {
-                                    ltime = Time.now();
-                                    log = "cancel order";
-                                    logger =logger;
-                                };
-                                var logs : List.List<Log> = List.fromArray(order.logs);
-                                logs := List.push(log, logs); 
+                            }else{
+                                isRefunded := true;
+                            };
 
-                            orders.put(orderid,{
-                                id = orderid;
-                                buyer = order.buyer;
-                                seller = order.seller;
-                                memo = order.memo;
-                                amount = order.amount;
-                                account= order.account;
-                                blockin = order.blockin;
-                                blockout = order.blockout;
-                                createtime = order.createtime;
-                                expiration = order.expiration;
+                            if(isRefunded){
+                                    var logger:{
+                                                #buyer;
+                                                #seller;
+                                                #escrow;
+                                            } = #escrow;
+                                            if(order.buyer == caller){
+                                                logger:=#buyer;
+                                            }else if(order.seller == caller){
+                                                logger:= #seller;
+                                            };
+                                            let log = {
+                                                ltime = Time.now();
+                                                log = "cancel order";
+                                                logger =logger;
+                                            };
+                                            var logs : List.List<Log> = List.fromArray(order.logs);
+                                            logs := List.push(log, logs); 
 
-                                lockedby = getPrincipal();
-                                status = #canceled;
-                                updatetime = Time.now();
+                                        orders.put(orderid,{
+                                            id = orderid;
+                                            buyer = order.buyer;
+                                            seller = order.seller;
+                                            memo = order.memo;
+                                            amount = order.amount;
+                                            account= order.account;
+                                            blockin = order.blockin;
+                                            blockout = order.blockout;
+                                            createtime = order.createtime;
+                                            expiration = order.expiration;
 
-                                comments = order.comments;
-                                logs = order.logs;                
-                            });
-                            #ok(1)
-                   }else{
-                       #err(err)
-                   };
+                                            lockedby = getPrincipal();
+                                            status = #canceled;
+                                            updatetime = Time.now();
+
+                                            comments = order.comments;
+                                            logs = order.logs;                
+                                        });
+                                        #ok(1)
+                            }else{
+                                #err(err)
+                            };
+                //        };
+                //         case(#err(e)){
+                //             #err("failed to transfer fee to escrow :" # e);
+                //         };
+                //    };
                }else{
                    #err("no cancel allowed")
                }
@@ -456,7 +575,9 @@ actor class EscrowService() = this {
     //fetch user's orders with status: #new; #deposited; #deliveried; 
     public shared({caller}) func getOrders(): async [Order]{
          Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
-                Int.greater(o.expiration * 1_000_000_000,Time.now()) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
+                Int.greater(o.expiration * 1_000_000_000,Time.now()) and 
+                (o.buyer == caller or o.seller == caller) and 
+                (o.status == #new or o.status == #deposited or o.status == #delivered or o.status == #received)
             })
     };
     
@@ -499,6 +620,10 @@ actor class EscrowService() = this {
          await Ledger.account_balance({ account = Account.accountIdentifier(getPrincipal(),sublob) });
     };
 
+    public query func getAccountId(): async Text{
+        let sublob = Utils.subToSubBlob(0);
+         Utils.accountIdToHex(Account.accountIdentifier(getPrincipal(), sublob));
+    };
     // LEDGER WRAPPERS
     public shared func accountBalance (account: AccountIdText) : async Types.ICP {
         
@@ -520,7 +645,7 @@ actor class EscrowService() = this {
             #ok(blockIndex)
           };
           case (#Err(#InsufficientFunds { balance })) {
-            throw Error.reject("Top me up! The balance is only " # debug_show balance # " e8s");
+            throw Error.reject("No enough fund! The balance is only " # debug_show balance # " e8s");
           };
           case (#Err(other)) {
             throw Error.reject("Unexpected error: " # debug_show other);
