@@ -23,10 +23,12 @@ module {
         blockin: Nat64; 
         blockout: Nat64;
         createtime: Int;
+        lockedby: Principal;
         status:{
             #new;
             #deposited;
             #delivered;
+            #received;
             #released;
             #refunded;
             #closed;

@@ -93,6 +93,7 @@ actor class EscrowService() = this {
                 expiration = expiration;
                 createtime = Time.now();
                 updatetime = Time.now();
+                lockedby = caller;
                 comments = [];
                 logs = [{
                     ltime = Time.now();
@@ -148,6 +149,7 @@ actor class EscrowService() = this {
                                 createtime = order.createtime;
 
                                 status = #deposited;
+                                lockedby = order.seller;
                                 updatetime = Time.now();
                                 comments = order.comments;
                                 logs = List.toArray(logs);
@@ -194,6 +196,7 @@ actor class EscrowService() = this {
                     expiration = order.expiration;
                     createtime = order.createtime;
 
+                    lockedby = order.buyer;
                     status = #delivered;
                     updatetime = Time.now();
                     comments = order.comments;
@@ -204,7 +207,7 @@ actor class EscrowService() = this {
     };
 
     //buyer check the item received, call confirm to change status to #released 
-     public shared({caller}) func confirm(orderid: Nat): async Result.Result<Nat,Text>{
+     public shared({caller}) func received(orderid: Nat): async Result.Result<Nat,Text>{
          //release fund
         let order =  Array.filter(Iter.toArray(orders.vals()), func(o: Order):Bool{
                (o.id == orderid) and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
@@ -230,7 +233,7 @@ actor class EscrowService() = this {
                 blockout = order.blockout;
                 createtime = order.createtime;
                 expiration = order.expiration;
-
+                lockedby = getPrincipal();
                 status = #released;
                 updatetime = Time.now();
 
@@ -267,7 +270,7 @@ actor class EscrowService() = this {
                 blockout = order.blockout;
                 createtime = order.createtime;
                 expiration = order.expiration;
-
+                lockedby = getPrincipal();
                 status = #closed;
                 updatetime = Time.now();
 
@@ -287,17 +290,31 @@ actor class EscrowService() = this {
         });
        switch(order){
            case(?order){
-               if((order.status == #deposited or order.status == #new) and order.buyer == caller){
+               if((order.status == #deposited or order.status == #new) and order.buyer == caller and order.lockedby == caller){
+                   var isRefunded = false;
+                   var err = "";
                    //refund first
+                   if(order.status == #deposited){
                     let r = await transfer({
                             memo = 1;
                             from = order.account.index;
                             to = Account.getAccountTextId(caller,0);
-                            amount = order.amount * E8S - FEE;
+                            amount = order.amount * E8S;
                         });
                     switch(r){
                         case(#ok(block)){
-                                var logger:{
+                            isRefunded := true;
+                        };
+                        case(#err(e)){
+                            err := e;
+                        };
+                    };
+                   }else{
+                       isRefunded := true;
+                   };
+
+                   if(isRefunded){
+                        var logger:{
                                     #buyer;
                                     #seller;
                                     #escrow;
@@ -327,6 +344,7 @@ actor class EscrowService() = this {
                                 createtime = order.createtime;
                                 expiration = order.expiration;
 
+                                lockedby = getPrincipal();
                                 status = #canceled;
                                 updatetime = Time.now();
 
@@ -334,12 +352,9 @@ actor class EscrowService() = this {
                                 logs = order.logs;                
                             });
                             #ok(1)
-                        };
-                        case(#err(e)){
-                            #err(e)
-                        };
-                    }
-
+                   }else{
+                       #err(err)
+                   };
                }else{
                    #err("no cancel allowed")
                }
@@ -378,7 +393,7 @@ actor class EscrowService() = this {
                 blockout = order.blockout;
                 createtime = order.createtime;
                 expiration = order.expiration;
- 
+                lockedby = order.lockedby;
                 status = #refunded;
                 updatetime = Time.now();
 
@@ -415,7 +430,7 @@ actor class EscrowService() = this {
                         blockout = order.blockout;
                         createtime = order.createtime;
                         expiration = order.expiration;
-        
+                        lockedby = order.lockedby;
                         status = order.status;
                         updatetime = order.updatetime;
 
