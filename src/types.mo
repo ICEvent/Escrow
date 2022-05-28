@@ -12,19 +12,15 @@ module {
             index: Subaccount;
             id: AccountIdText;
         };
-
-    public type Order ={
-        id: Nat;
-        buyer: Principal;
-        seller: Principal;
-        memo: Text;
-        amount: Nat64;
-        account:EscrowAccount;
-        blockin: Nat64; 
-        blockout: Nat64;
-        createtime: Int;
-        lockedby: Principal;
-        status:{
+    public type Balance = {
+        #e8s: Nat64;
+        #e6s: Nat64;
+    };    
+    public type Currency = {
+        #ICP;
+        #ICET;
+    };    
+    public type Status = {
             #new;
             #deposited;
             #delivered;
@@ -34,11 +30,31 @@ module {
             #closed;
             #canceled;
         };
-        
+    public type Order ={
+        id: Nat;
+        buyer: Principal;
+        seller: Principal;
+        memo: Text;
+        amount: Nat64;
+        currency: Currency;
+        account:EscrowAccount;
+        blockin: Nat64; 
+        blockout: Nat64;
+        createtime: Int;
+        lockedby: Principal;
+        status:Status;        
         updatetime: Int;
         expiration: Int;
         comments: [Comment];
         logs:[Log];
+    };
+
+    public type NewOrder = {
+        seller: Principal;
+        memo: Text;
+        amount: Nat64;
+        currency: Currency;
+        expiration: Int;
     };
 
     public type Comment = {
@@ -88,6 +104,7 @@ module {
         from: Nat;
         to: AccountIdText;
         amount: Nat64;
+        currency: Currency;
     };
     
     // Arguments for the `transfer` call.
