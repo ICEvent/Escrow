@@ -1,0 +1,133 @@
+import Array "mo:base/Array";
+import Principal "mo:base/Principal";
+import Buffer "mo:base/Buffer";
+import Time "mo:base/Time";
+import Result "mo:base/Result";
+import TrieMap "mo:base/TrieMap";
+import Nat "mo:base/Nat";
+import Iter "mo:base/Iter";
+import Hash "mo:base/Hash";
+
+import Types "types";
+
+
+module{
+
+    type Item = Types.Item;
+    type NewItem = Types.NewItem;
+    type Status = Types.Status;
+    type Itype = Types.Itype;
+
+    public class Items(stableItemId: Nat, stableItems: [(Nat,Item)]){
+
+        //init states
+        private var nextId: Nat = stableItemId;
+        private var items = TrieMap.TrieMap<Nat, Item>(Nat.equal, Hash.hash);
+        items := TrieMap.fromEntries<Nat, Item>(Iter.fromArray(stableItems), Nat.equal, Hash.hash);
+        
+
+        public func toStable(): [(Nat,Item)] {
+             Iter.toArray(items.entries());
+        };
+
+        public func toStableId(): Nat{
+            nextId
+        };
+        
+
+
+        //add new item
+        public func create(newData: NewItem, owner: Principal): Nat {
+            let id = nextId;
+            let item = {
+                 name = newData.name;
+                image = newData.image;
+                itype = newData.itype;
+                price  = newData.price;
+                currency  = newData.currency;
+                status = #list;
+                owner = owner;
+                listime = Time.now();
+
+
+            };
+            items.put(id,item);
+            nextId := nextId+1;
+            id;
+        };  
+
+        public func updateStatus(id: Nat, status: Status): Result.Result<Nat, Text>{
+            let fitem = items.get(id);
+            switch(fitem){
+                case(?fitem){
+                    let udata = {
+                        name = fitem.name;
+                        image = fitem.image;
+                        itype = fitem.itype;
+                        price  = fitem.price;
+                        currency  = fitem.currency;
+                        status = status;
+                        owner = fitem.owner;
+                        listime = fitem.listime;
+
+
+                    };
+                    items.put(id,udata);
+                    #ok(1)
+                };
+                case(_){
+                    #err("no item found")
+                };
+            };
+        };
+        
+        public func lock(id: Nat, lockedby: Principal): Result.Result<Nat, Text>{
+            let fitem = items.get(id);
+            switch(fitem){
+                case(?fitem){
+                    if(fitem.status == #list){
+                        let udata = {
+                            name = fitem.name;
+                            image = fitem.image;
+                            itype = fitem.itype;
+                            price  = fitem.price;
+                            currency  = fitem.currency;
+                            status = #locked(lockedby);
+                            owner = fitem.owner;
+                            listime = fitem.listime;
+
+
+                        };
+                        items.put(id,udata);
+                        #ok(1)
+                    }else{
+                        #err("this item is locked by someone else")
+                    };
+                    
+                };
+                case(_){
+                    #err("no item found")
+                };
+            };
+        };
+        
+        public func retrieve(id:Nat): ?Item{
+            items.get(id)
+        };
+
+        public func getUserItems(user: Principal, status: Status) : [Item] {
+            let msgArr =   Iter.toArray(items.vals());
+            Array.filter(msgArr, func(l: Item):Bool{
+                l.owner == user and l.status == status
+            });
+        };
+       
+       public func getTypeItems(itype: Itype): [Item]{
+            let msgArr =   Iter.toArray(items.vals());
+            Array.filter(msgArr, func(l: Item):Bool{
+                l.itype == itype and l.status == #list
+            });
+       };
+
+    }
+}

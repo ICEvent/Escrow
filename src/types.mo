@@ -49,30 +49,7 @@ module {
         logs:[Log];
     };
 
-    public type Item = {
-        name : Text;
-        image: Text;
-        itype : {
-            #NFT;
-            #SERVICE;
-            #MERCHANDIS;
-            #OTHER;
-        };
-        price = Nat64;
-        currency : {
-            #ICP;
-            #ICET;
-        };
-        status : {
-            #list;
-            #trading;
-            #sold;
-        };
-        owner: Principal;
-        listime : Time;
-
-    };
-
+  
     public type NewOrder = {
         seller: Principal;
         memo: Text;

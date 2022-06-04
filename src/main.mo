@@ -20,18 +20,21 @@ import Result       "mo:base/Result";
 import Text         "mo:base/Text";
 import Time         "mo:base/Time";
 import Trie         "mo:base/Trie";
-import TrieMap "mo:base/TrieMap";
+import TrieMap      "mo:base/TrieMap";
 
-import CRC32 "CRC32";
-import SHA224 "SHA224";
+import CRC32        "CRC32";
+import SHA224       "SHA224";
 import Account      "./account";
 import Hex          "./hex";
 import Types        "./types";
 import Utils        "./utils";
 
-import ICETTypes "./ICETTypes";
+import ICETTypes    "./ICETTypes";
 
-import Page "./page";
+import Page         "./page";
+
+import ItemTypes    "./list/types";
+import Items        "./list";
 
 actor class EscrowService() = this {
 
@@ -46,6 +49,7 @@ actor class EscrowService() = this {
     let FEE : Nat64 = 10_000;
     let E8S : Nat64 = 10_000_000;
     
+    stable var default_page_size = 20;
 
     stable var ESCROW_FEE : Nat64 = 0;
 
@@ -61,6 +65,8 @@ actor class EscrowService() = this {
     type Currency = Types.Currency;
     type Status = Types.Status;
     type Balance = Types.Balance;
+
+
     
     // LEDGER
 
@@ -78,10 +84,13 @@ actor class EscrowService() = this {
     stable var nextOrderId : Nat = 1;
     stable var upgradeOrders: [(Nat,Order)] = [];
     
+    stable var _upgradeItemId : Nat = 1;
+    stable var _upgradeItems: [(Nat, ItemTypes.Item)] = [];
 
     var orders = TrieMap.TrieMap<Nat, Order>(Nat.equal, Hash.hash);
         orders := TrieMap.fromEntries<Nat, Order>(Iter.fromArray(upgradeOrders), Nat.equal, Hash.hash);
 
+    let items = Items.Items(_upgradeItemId,_upgradeItems);
    
     //buyer create a new order
     public shared({caller}) func create(newOrder: NewOrder) : async Result.Result<Nat,Text>{
@@ -659,7 +668,7 @@ actor class EscrowService() = this {
                 (o.buyer == caller or o.seller == caller) 
             });
 
-         Page.getArrayPage(os,page,20);   
+         Page.getArrayPage(os,page,default_page_size);   
 
     };
 
@@ -825,8 +834,42 @@ actor class EscrowService() = this {
         { key = s; hash = Text.hash(s) };
     };
 
+    //-----------------------  Item List ---------------------------------------
+
+    public shared({caller}) func listItem(newItem: ItemTypes.NewItem): async Result.Result<Nat, Text>{
+        if(Principal.isAnonymous(caller)){
+            #err("no authenticated")
+        }else{
+            let id = items.create(newItem,caller);
+            #ok(id);
+        };
+    };
+
+    public query func searchItems(itype: ItemTypes.Itype, page:Nat): async [ItemTypes.Item]{
+        let titems = items.getTypeItems(itype);
+        Page.getArrayPage(titems,page,default_page_size);   
+    };
+
+    public shared({caller}) func lockItem(id: Nat): async Result.Result<Nat, Text>{
+        if(Principal.isAnonymous(caller)){
+            #err("no authenticated")
+        }else{
+            items.lock(id, caller);
+        };
+    };
+
+    public shared({caller}) func changeItemStatus(id: Nat, status: ItemTypes.Status): async Result.Result<Nat, Text>{
+        items.updateStatus(id, status);
+    };
+
+    /**
+    system
+    **/
     system func preupgrade() {
         upgradeOrders := Iter.toArray(orders.entries());  
+
+        _upgradeItemId := items.toStableId();
+        _upgradeItems := items.toStable();
     };
 
     system func postupgrade() {
