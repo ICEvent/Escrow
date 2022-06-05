@@ -40,6 +40,7 @@ module{
         public func create(newData: NewItem, owner: Principal): Nat {
             let id = nextId;
             let item = {
+                id = id;
                  name = newData.name;
                 image = newData.image;
                 itype = newData.itype;
@@ -61,6 +62,7 @@ module{
             switch(fitem){
                 case(?fitem){
                     let udata = {
+                        id = fitem.id;
                         name = fitem.name;
                         image = fitem.image;
                         itype = fitem.itype;
@@ -87,6 +89,7 @@ module{
                 case(?fitem){
                     if(fitem.status == #list){
                         let udata = {
+                            id = fitem.id;
                             name = fitem.name;
                             image = fitem.image;
                             itype = fitem.itype;
@@ -115,10 +118,14 @@ module{
             items.get(id)
         };
 
-        public func getUserItems(user: Principal, status: Status) : [Item] {
+        public func delete(id: Nat): ?Item{
+            items.remove(id);
+        };
+
+        public func getUserItems(user: Principal) : [Item] {
             let msgArr =   Iter.toArray(items.vals());
             Array.filter(msgArr, func(l: Item):Bool{
-                l.owner == user and l.status == status
+                l.owner == user 
             });
         };
        

@@ -15,6 +15,7 @@ module {
         };
 
     public type Item = {
+        id: Nat;
         name : Text;
         image: Text;
         itype : Itype;

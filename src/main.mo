@@ -850,6 +850,11 @@ actor class EscrowService() = this {
         Page.getArrayPage(titems,page,default_page_size);   
     };
 
+    public query({caller}) func getMyItems( page: Nat): async  [ItemTypes.Item]{
+        let titems = items.getUserItems(caller);
+        Page.getArrayPage(titems,page,default_page_size);   
+    };
+
     public shared({caller}) func lockItem(id: Nat): async Result.Result<Nat, Text>{
         if(Principal.isAnonymous(caller)){
             #err("no authenticated")
@@ -857,9 +862,57 @@ actor class EscrowService() = this {
             items.lock(id, caller);
         };
     };
+    public shared({caller}) func deleteItem(id: Nat): async Result.Result<Nat, Text>{
+        if(Principal.isAnonymous(caller)){
+            #err("no authenticated")
+        }else{
+            let item = items.retrieve(id);
+            switch(item){
+                case(?item){
+                    if(item.owner == caller){
+                        let item = items.delete(id);
+                        switch(item){
+                            case(?item){
+                                #ok(1)
+                            };
+                            case(_){
+                                #err("failed to delete")
+                            }
+                        }
+                    }else{
+                        #err("no permission")
+                    }
+                    
+                };
+                case(_){
+                    #err("no item found")
+                };
+            };
 
+        };
+    };
     public shared({caller}) func changeItemStatus(id: Nat, status: ItemTypes.Status): async Result.Result<Nat, Text>{
-        items.updateStatus(id, status);
+        if(Principal.isAnonymous(caller)){
+            #err("no authenticated")
+        }else{
+            let item = items.retrieve(id);
+            switch(item){
+                case(?item){
+                    if(item.owner == caller){
+                        items.updateStatus(id, status);
+                    }else{
+                        #err("no permission")
+                    }
+                    
+                };
+                case(_){
+                    #err("no item found")
+                };
+            };
+
+            
+        };
+
     };
 
     /**
