@@ -1,21 +1,37 @@
 {
   "canisters": {
     "escrow": {
-      "main": "src/main.mo",
+      "main": "backend/main.mo",
       "type": "motoko"
+    },
+    "escrow_assets": {
+      "dependencies": [
+        "escrow"
+      ],
+      "frontend": {
+        "entrypoint": "dist/index.html"
+      },
+      "source": [
+        "dist/"
+      ],
+      "type": "assets"
     }
   },
   "defaults": {
     "build": {
-      "args": "",
       "packtool": ""
     }
   },
-  "dfx": "0.9.0",
   "networks": {
     "local": {
       "bind": "127.0.0.1:8000",
       "type": "ephemeral"
+    },
+    "ic": {
+      "providers": [
+        "https://mainnet.dfinity.network"
+      ],
+      "type": "persistent"
     }
   },
   "version": 1

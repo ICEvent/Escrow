@@ -1,0 +1,50 @@
+type UpdateProfile = 
+ record {
+   bio: text;
+   name: text;
+   pfp: text;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Profile = 
+ record {
+   bio: text;
+   createtime: int;
+   id: text;
+   links: vec Link;
+   name: text;
+   owner: principal;
+   pfp: text;
+ };
+type NewProfile = 
+ record {
+   bio: text;
+   id: text;
+   name: text;
+   pfp: text;
+ };
+type Link = 
+ record {
+   name: text;
+   url: text;
+ };
+service : {
+  addLink: (text, Link) -> (Result);
+  createProfile: (NewProfile) -> (Result);
+  deleteLink: (text, text) -> (Result);
+  dumpProfiles: () -> (vec record {
+                             text;
+                             Profile;
+                           }) query;
+  dumpUserProfiles: () -> (vec record {
+                                 principal;
+                                 text;
+                               }) query;
+  getMyProfile: () -> (opt Profile) query;
+  getProfile: (text) -> (opt Profile) query;
+  listProfiles: () -> (vec Profile) query;
+  updateProfile: (text, UpdateProfile) -> (Result);
+}

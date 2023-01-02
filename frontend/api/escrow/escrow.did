@@ -1,0 +1,188 @@
+type U_Status = 
+ variant {
+   list;
+   locked: principal;
+   sold;
+ };
+type U_Itype = 
+ variant {
+   MERCHANDIS;
+   NFT;
+   OTHER;
+   SERVICE;
+ };
+type U_Item = 
+ record {
+   currency: variant {
+               ICET;
+               ICP;
+             };
+   id: nat;
+   image: text;
+   itype: U_Itype;
+   listime: int;
+   name: text;
+   owner: principal;
+   price: nat64;
+   status: U_Status;
+ };
+type Subaccount = nat;
+type Status = 
+ variant {
+   canceled;
+   closed;
+   delivered;
+   deposited;
+   new;
+   received;
+   refunded;
+   released;
+ };
+type Result = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Order = 
+ record {
+   account: EscrowAccount;
+   amount: nat64;
+   blockin: nat64;
+   blockout: nat64;
+   buyer: principal;
+   comments: vec Comment;
+   createtime: int;
+   currency: Currency;
+   expiration: int;
+   id: nat;
+   lockedby: principal;
+   logs: vec Log;
+   memo: text;
+   seller: principal;
+   status: Status;
+   updatetime: int;
+ };
+type NewOrder = 
+ record {
+   amount: nat64;
+   currency: Currency;
+   expiration: int;
+   memo: text;
+   seller: principal;
+ };
+type NewItem = 
+ record {
+   currency: variant {
+               ICET;
+               ICP;
+             };
+   description: text;
+   image: text;
+   itype: Itype;
+   name: text;
+   price: nat64;
+   status: ItemStatus;
+ };
+type Log = 
+ record {
+   log: text;
+   logger: variant {
+             buyer;
+             escrow;
+             seller;
+           };
+   ltime: int;
+ };
+type Itype = 
+ variant {
+   coin;
+   merchandise;
+   nft;
+   other;
+   "service";
+ };
+type ItemStatus = 
+ variant {
+   list;
+   pending;
+   sold;
+   unlist;
+ };
+type Item = 
+ record {
+   currency: variant {
+               ICET;
+               ICP;
+             };
+   description: text;
+   id: nat;
+   image: text;
+   itype: Itype;
+   listime: int;
+   name: text;
+   owner: principal;
+   price: nat64;
+   status: ItemStatus;
+ };
+type EscrowService = 
+ service {
+   accountBalance: (AccountIdText__1, Currency__1) -> (Balance);
+   availableCycles: () -> (nat) query;
+   cancel: (nat) -> (Result);
+   changeItemStatus: (nat, ItemStatus) -> (Result);
+   close: (nat) -> (Result);
+   comment: (nat, text) -> (Result);
+   create: (NewOrder) -> (Result);
+   deleteItem: (nat) -> (Result);
+   deliver: (nat) -> (Result);
+   deposit: (nat) -> (Result);
+   getAccountId: (nat) -> (text) query;
+   getAllOrders: (nat) -> (vec Order);
+   getBackupItems: () -> (vec U_Item) query;
+   getBalanceBySub: (nat, Currency__1) -> (Balance);
+   getItemsSize: () -> (nat) query;
+   getMyAccountId: (nat) -> (text) query;
+   getMyBalanceBySub: (nat, Currency__1) -> (Balance);
+   getMyItems: (nat) -> (vec Item) query;
+   getOrder: (nat) -> (opt Order);
+   getOrders: () -> (vec Order);
+   getSystemData: () -> (record {
+                           cycles: nat;
+                           heap: nat;
+                           memory: nat;
+                         }) query;
+   listItem: (NewItem) -> (Result);
+   receive: (nat) -> (Result);
+   refund: (nat) -> (Result);
+   release: (nat) -> (Result);
+   searchItems: (Itype, nat) -> (vec Item) query;
+ };
+type EscrowAccount = 
+ record {
+   id: AccountIdText;
+   index: Subaccount;
+ };
+type Currency__1 = 
+ variant {
+   ICET;
+   ICP;
+ };
+type Currency = 
+ variant {
+   ICET;
+   ICP;
+ };
+type Comment = 
+ record {
+   comment: text;
+   ctime: int;
+   user: principal;
+ };
+type Balance = 
+ variant {
+   e6s: nat64;
+   e8s: nat64;
+ };
+type AccountIdText__1 = text;
+type AccountIdText = text;
+service : () -> EscrowService

@@ -2,21 +2,24 @@ import Time "mo:base/Time";
 
 module {
 
-    public type Status = {
+    public type ItemStatus = {
             #list;
-            #locked: Principal;
+            #pending;
             #sold;
+            #unlist;
         };
     public type Itype = {
-            #NFT;
-            #SERVICE;
-            #MERCHANDIS;
-            #OTHER;
+            #nft;
+            #coin;
+            #service;
+            #merchandise;
+            #other;
         };
 
     public type Item = {
         id: Nat;
         name : Text;
+        description: Text;
         image: Text;
         itype : Itype;
         price : Nat64;
@@ -24,25 +27,22 @@ module {
             #ICP;
             #ICET;
         };
-        status : Status;
+        status : ItemStatus;
         owner: Principal;
         listime : Int;
     };
 
     public type NewItem = {
         name : Text;
+        description: Text;
         image: Text;
-        itype : {
-            #NFT;
-            #SERVICE;
-            #MERCHANDIS;
-            #OTHER;
-        };
+        itype : Itype;
         price : Nat64;
         currency : {
             #ICP;
             #ICET;
         };        
+        status : ItemStatus;
     };
     
 

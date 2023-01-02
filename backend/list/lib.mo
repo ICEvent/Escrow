@@ -15,7 +15,7 @@ module{
 
     type Item = Types.Item;
     type NewItem = Types.NewItem;
-    type Status = Types.Status;
+    type Status = Types.ItemStatus;
     type Itype = Types.Itype;
 
     public class Items(stableItemId: Nat, stableItems: [(Nat,Item)]){
@@ -42,11 +42,12 @@ module{
             let item = {
                 id = id;
                  name = newData.name;
+                 description = newData.description;
                 image = newData.image;
                 itype = newData.itype;
                 price  = newData.price;
                 currency  = newData.currency;
-                status = #list;
+                status = newData.status;
                 owner = owner;
                 listime = Time.now();
 
@@ -64,6 +65,7 @@ module{
                     let udata = {
                         id = fitem.id;
                         name = fitem.name;
+                        description = fitem.description;
                         image = fitem.image;
                         itype = fitem.itype;
                         price  = fitem.price;
@@ -83,36 +85,36 @@ module{
             };
         };
         
-        public func lock(id: Nat, lockedby: Principal): Result.Result<Nat, Text>{
-            let fitem = items.get(id);
-            switch(fitem){
-                case(?fitem){
-                    if(fitem.status == #list){
-                        let udata = {
-                            id = fitem.id;
-                            name = fitem.name;
-                            image = fitem.image;
-                            itype = fitem.itype;
-                            price  = fitem.price;
-                            currency  = fitem.currency;
-                            status = #locked(lockedby);
-                            owner = fitem.owner;
-                            listime = fitem.listime;
+        // public func lock(id: Nat, lockedby: Principal): Result.Result<Nat, Text>{
+        //     let fitem = items.get(id);
+        //     switch(fitem){
+        //         case(?fitem){
+        //             if(fitem.status == #list){
+        //                 let udata = {
+        //                     id = fitem.id;
+        //                     name = fitem.name;
+        //                     image = fitem.image;
+        //                     itype = fitem.itype;
+        //                     price  = fitem.price;
+        //                     currency  = fitem.currency;
+        //                     status = #locked(lockedby);
+        //                     owner = fitem.owner;
+        //                     listime = fitem.listime;
 
 
-                        };
-                        items.put(id,udata);
-                        #ok(1)
-                    }else{
-                        #err("this item is locked by someone else")
-                    };
+        //                 };
+        //                 items.put(id,udata);
+        //                 #ok(1)
+        //             }else{
+        //                 #err("this item is locked by someone else")
+        //             };
                     
-                };
-                case(_){
-                    #err("no item found")
-                };
-            };
-        };
+        //         };
+        //         case(_){
+        //             #err("no item found")
+        //         };
+        //     };
+        // };
         
         public func retrieve(id:Nat): ?Item{
             items.get(id)
@@ -136,5 +138,8 @@ module{
             });
        };
 
+       public func getItems(): [Item]{
+            Iter.toArray(items.vals());
+       };
     }
 }
