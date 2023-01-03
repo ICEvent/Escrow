@@ -20,13 +20,6 @@ import { toast } from 'react-toastify';
 
 export default function ListItemForm(props) {
 
-    const [showPassword, setShowPassword] = React.useState(false);
-
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-        event.preventDefault();
-    };
 
     const [values, setValues] = React.useState({
         name: "",
@@ -46,22 +39,26 @@ export default function ListItemForm(props) {
         if(!values.name ||  values.name == ""){toast.warn("name is required")}
         else if(values.price <= 0){toast.warn("Price is not correct")}
         else{
-            props.submit({
+            const currency = values.currency == CURRENCY_ICET ? { "ICET": null } : { "ICP": null };
+            let i = {
                 name: values.name,
                 description: values.description,
                 image: values.image,
                 itype: { "nft": null },
                 price: BigInt(values.price * (values.currency == CURRENCY_ICET ? LEDGER_E6S : LEDGER_E8S)),
-                currency: values.currency == CURRENCY_ICET ? { "ICET": null } : { "ICP": null },
+                currency: currency,
                 status: { "list": null }
-            });
+            };
+            console.log(i)
+
+            props.submit(i);
             
         }        
        
     };
 
     return (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+        <Box>
             <div>
                 <ImageListItem>
                     <img src={values.image} />
@@ -98,8 +95,9 @@ export default function ListItemForm(props) {
 
                     />
                 </FormControl>
+         
                 <FormControl fullWidth>
-                  
+                 
                     <Select
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"

@@ -93,7 +93,7 @@ const Home = () => {
           <Button onClick={()=>setItemType("merchandise")}>Merchandises</Button>
           <Button onClick={()=>setItemType("other")}>Others</Button>
         </Stack> */}
-        {menu == MENU_HOME && <OfferList offers={offers} />}
+        {!menu || menu == MENU_HOME && <OfferList offers={offers} />}
         {menu == MENU_ORDERS && <OrderList />}
         {menu == MENU_PROFILE && <Profile />}
       </Container>

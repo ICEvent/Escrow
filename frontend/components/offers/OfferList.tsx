@@ -10,11 +10,14 @@ import { toast } from 'react-toastify';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { useEscrow, useLoading } from '../Store';
+import { useEscrow, useLoading, useGlobalContext } from '../Store';
 
 
 export default (props) => {
 
+    const {state:{
+        isAuthed
+    }} = useGlobalContext();
     const escrow = useEscrow();
     const [loading, setLoading] = React.useState(false)
     const [openListForm, setOpenListForm] = React.useState(false)
@@ -40,7 +43,7 @@ export default (props) => {
     return (
         <>
         
-        <Button variant='contained' onClick={()=> setOpenListForm(true)}>List NFT</Button>
+        {isAuthed && <Button variant='contained' onClick={()=> setOpenListForm(true)}>List NFT</Button>}
         <Divider/>
         
         <Grid

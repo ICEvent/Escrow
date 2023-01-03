@@ -36,7 +36,7 @@ const Header: FC = () => {
   const oneblock = useOneblock();
   const escrow = useEscrow();
   const setAgent = useSetAgent();
-  const {setMenu} = useMenu()
+  const {menu,setMenu} = useMenu()
   const { state: { isAuthed, principal, loading } } = useGlobalContext();
 
   const [authClient, setAuthClient] = useState<AuthClient>(null);
@@ -60,7 +60,8 @@ const Header: FC = () => {
     setMenu(MENU_PROFILE)
   }
   useEffect(() => {
-
+    if(!menu) setMenu(MENU_HOME);
+    
     (async () => {
       const authClient = await AuthClient.create(
         {
@@ -71,7 +72,6 @@ const Header: FC = () => {
         }
       );
       setAuthClient(authClient);
-
 
       if (await authClient.isAuthenticated()) {
         handleAuthenticated(authClient);

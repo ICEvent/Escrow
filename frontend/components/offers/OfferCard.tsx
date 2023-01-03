@@ -21,22 +21,9 @@ import { useGlobalContext, useEscrow } from '../Store';
 import OfferList from './OfferList';
 import { toast } from 'react-toastify';
 import moment from 'moment';
-import { ORDER_DEFAULT_EXPIRED_DAYS } from '../../lib/constants';
+import { CURRENCY_ICET, CURRENCY_ICP, LEDGER_E6S, LEDGER_E8S, ORDER_DEFAULT_EXPIRED_DAYS } from '../../lib/constants';
 
-interface ExpandMoreProps extends IconButtonProps {
-    expand: boolean;
-}
 
-const ExpandMore = styled((props: ExpandMoreProps) => {
-    const { expand, ...other } = props;
-    return <IconButton {...other} />;
-})(({ theme, expand }) => ({
-    transform: !expand ? 'rotate(0deg)' : 'rotate(180deg)',
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-        duration: theme.transitions.duration.shortest,
-    }),
-}));
 
 export default (props) => {
 
@@ -47,9 +34,9 @@ export default (props) => {
     const escrow = useEscrow();
 
     const [loading, setLoading] = React.useState(false);
-    const currency = props.offer.currency["ICP"] ? "ICP" : "ICET";
+    const currency = Object.getOwnPropertyNames(props.offer.currency)[0] == CURRENCY_ICP ? CURRENCY_ICP : CURRENCY_ICET;
 
-    const price = currency == "ICP" ? parseInt(props.offer.price) / 100000000 : parseInt(props.offer.price) / 1000000;
+    const price = currency == CURRENCY_ICP ? parseInt(props.offer.price) / LEDGER_E8S : parseInt(props.offer.price) / LEDGER_E6S;
 
     const buyit = () => {
         if (!isAuthed) {
@@ -78,8 +65,7 @@ export default (props) => {
         setLoading(true)
         escrow.changeItemStatus(props.offer.id, {"sold": null}).then(res=>{
             if(res["ok"]){
-                toast.success("unlist this item")
-                
+                toast.success("unlist this item")                
             }else{
                 toast.error(res["err"])
             };
@@ -104,13 +90,13 @@ export default (props) => {
                 </Tooltip>
                 <CardActions disableSpacing>
                     ${currency} {price}
-                    {!loading && props.offer.owner.toString() != principal.toString() && <IconButton aria-label="put in order"
+                    {(!principal || !loading && props.offer.owner.toString() != principal.toString()) && <IconButton aria-label="put in order"
                         onClick={buyit}
                         disabled={loading}
                     >
                         <ShoppingCartIcon />
                     </IconButton>}
-                    {props.offer.owner.toString() == principal.toString() &&
+                    {principal && props.offer.owner.toString() == principal.toString() &&
                     <Tooltip title="unlist item"><IconButton onClick={unlist}>
                         <FilterListOffIcon/>
                     </IconButton></Tooltip>

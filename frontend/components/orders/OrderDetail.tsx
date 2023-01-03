@@ -24,6 +24,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { toast } from 'react-toastify';
 
 import { useEscrow, useGlobalContext } from '../Store';
+import Comments from './OrderComments';
 
 
 export default (props) => {
@@ -126,6 +127,18 @@ export default (props) => {
             setLoading(false);
         })
     };  
+
+    const saveComment = (c) => {
+        setLoading(true);
+        escrow.comment(order.id, c).then(res=>{
+            setLoading(false);
+            if(res["ok"]){
+                toast.success("saved comment");
+            }else{
+                toast.error(res["err"])
+            };
+        })
+    }
     return (
         <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="spanning table">
@@ -236,6 +249,7 @@ export default (props) => {
 
 
             </Table>
+            <Comments comments={order.comments} submit={saveComment}/>
             <Backdrop
                 sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
                 open={loading}
