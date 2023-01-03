@@ -3,9 +3,9 @@ import { useEffect } from "react"
 import { AuthClient } from "@dfinity/auth-client";
 import { HttpAgent, Identity } from "@dfinity/agent";
 
-
+import { ToastContainer, toast } from 'react-toastify';
 import { HOST } from "../lib/canisters";
-import { ONE_WEEK_NS, IDENTITY_PROVIDER } from "../lib/constants";
+import { ONE_WEEK_NS, IDENTITY_PROVIDER, MENU_HOME, MENU_ORDERS, MENU_PROFILE } from "../lib/constants";
 
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -26,26 +26,21 @@ import OfferList from "../components/offers/OfferList";
 
 import Tooltip from '@mui/material/Tooltip';
 
-import { useOneblock, useSetAgent, useGlobalContext, useEscrow } from "../components/Store";
-import { Profile } from "frontend/api/profile/profile.did";
-import { Itype } from "frontend/api/escrow/escrow.did"
-import Navbar from "../components/Navbar";
+import { useOneblock, useSetAgent, useGlobalContext, useEscrow,useLoading,useMenu } from "../components/Store";
 
+import { Itype } from "../api/escrow/escrow.did"
+import Navbar from "../components/Navbar";
+import { Profile } from "./Profile";
+import OrderList from "../components/orders/OrderList";
 
 
 const Home = () => {
 
-  const oneblock = useOneblock();
   const escrow = useEscrow();
   const setAgent = useSetAgent();
+  const { menu } = useMenu();
+  const { setLoading } = useLoading()
   const { state: { isAuthed, principal } } = useGlobalContext();
-  const [openProfile, setOpenProfile] = useState(false);
-
-  const [profile, setProfile] = useState<Profile>();
-  const [authClient, setAuthClient] = useState<AuthClient>(null);
-
-  const [value, setValue] = useState(0);
-  const [message, setMessage] = useState();
 
   const [itemType, setItemType] = useState("NFT")
   const [offers, setOffers] = useState<Item[]>();
@@ -75,38 +70,34 @@ const Home = () => {
         sitype = { "other": null };
         break;
     };
+    setLoading(true)
     escrow.searchItems(sitype, BigInt(1)).then(res => {
       console.log(res)
+      setLoading(false)
       setOffers(res)
     })
   };
 
   return (
-
-    <Box sx={{ flexGrow: 1 }}>
-
-      <Navbar />
- 
       <Container
-        sx={{ textAlign: "center" }}
+        sx={{ flexGrow: 1 , mt:8 }}
         maxWidth="md"
       >
-
-
-        <Stack direction="row"
+        {/* <Stack direction="row"
           justifyContent="center"
-          alignItems="center" spacing={2}>
+          // alignItems="center" 
+          spacing={2}>
           <Button onClick={()=>setItemType("NFT")}>NFTs</Button>
           <Button onClick={()=>setItemType("coin")}>Crypto Currencies</Button>
           <Button onClick={()=>setItemType("service")}>Services</Button>
           <Button onClick={()=>setItemType("merchandise")}>Merchandises</Button>
           <Button onClick={()=>setItemType("other")}>Others</Button>
-        </Stack>
-        <OfferList offers={offers} />
+        </Stack> */}
+        {menu == MENU_HOME && <OfferList offers={offers} />}
+        {menu == MENU_ORDERS && <OrderList />}
+        {menu == MENU_PROFILE && <Profile />}
       </Container>
       
-    </Box>
-
   )
 }
 

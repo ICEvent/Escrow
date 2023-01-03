@@ -14,11 +14,12 @@ import Snackbar, { SnackbarOrigin } from '@mui/material/Snackbar';
 import Alert from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
+import FilterListOffIcon from '@mui/icons-material/FilterListOff';
 import { Principal } from "@dfinity/principal";
 
 import { useGlobalContext, useEscrow } from '../Store';
 import OfferList from './OfferList';
-// import { NotificationManager } from "react-notifications";
+import { toast } from 'react-toastify';
 import moment from 'moment';
 import { ORDER_DEFAULT_EXPIRED_DAYS } from '../../lib/constants';
 
@@ -40,7 +41,8 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
 export default (props) => {
 
     const { state: {
-        isAuthed
+        isAuthed,
+        principal
     } } = useGlobalContext();
     const escrow = useEscrow();
 
@@ -51,9 +53,10 @@ export default (props) => {
 
     const buyit = () => {
         if (!isAuthed) {
-            // NotificationManager.warning("Plseae login first");
+            toast.warn("Plseae login first");
 
         } else {
+            setLoading(true)
             escrow.create({
                 seller: props.offer.owner,
                 memo: props.offer.name,
@@ -61,13 +64,28 @@ export default (props) => {
                 currency: props.offer.currency,
                 expiration: BigInt(moment().add(ORDER_DEFAULT_EXPIRED_DAYS, "days").unix())
             }).then(res => {
+                setLoading(false)
                 if (res["ok"]) {
-                    // NotificationManager.success("Your order has been created, check your order list!")
+                    toast.success("Your order has been created, check your order list!")
                 } else {
-                    // NotificationManager.error(res["err"] ? res["err"] : "check console log for error message")
+                    toast.error(res["err"] ? res["err"] : "check console log for error message")
                 };
             });
         }
+    };
+
+    const unlist = () => {
+        setLoading(true)
+        escrow.changeItemStatus(props.offer.id, {"sold": null}).then(res=>{
+            if(res["ok"]){
+                toast.success("unlist this item")
+                
+            }else{
+                toast.error(res["err"])
+            };
+            setLoading(false)
+
+        })
     };
 
     return (
@@ -86,12 +104,17 @@ export default (props) => {
                 </Tooltip>
                 <CardActions disableSpacing>
                     ${currency} {price}
-                    <IconButton aria-label="put in order"
+                    {!loading && props.offer.owner.toString() != principal.toString() && <IconButton aria-label="put in order"
                         onClick={buyit}
                         disabled={loading}
                     >
                         <ShoppingCartIcon />
-                    </IconButton>
+                    </IconButton>}
+                    {props.offer.owner.toString() == principal.toString() &&
+                    <Tooltip title="unlist item"><IconButton onClick={unlist}>
+                        <FilterListOffIcon/>
+                    </IconButton></Tooltip>
+                    }
                     {loading && <Box sx={{ display: 'flex' }}>
                         <CircularProgress />
                     </Box>}

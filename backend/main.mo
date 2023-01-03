@@ -167,7 +167,7 @@ actor class EscrowService() = this {
                     };
 
                     if (Nat64.equal(balance, 0)) {
-                        #err("no deposit")
+                        #err("no deposit received")
                     } else if (Nat64.less(balance, order.amount)) {
                         #err("deposit (" # Nat64.toText(balance) # ") is less order ammount" # Nat64.toText(order.amount))
                     } else {
@@ -977,6 +977,7 @@ actor class EscrowService() = this {
 
     };
 
+
     /**
     system
     **/
@@ -989,68 +990,7 @@ actor class EscrowService() = this {
 
     system func postupgrade() {
         _upgradeItems := [];
-       //backup data
-        // let aitems = items.getItems();
-        // let ibs = Buffer.Buffer<UpgradeTypes.U_Item>(aitems.size());
-        // for(i in aitems.vals()){
-        //     ibs.add({
-        //          id = i.id;
-        //         name = i.name;
-        //         image = i.image;
-        //         itype = i.itype;
-        //         price  = i.price;
-        //         currency  = i.currency;
-        //         status = i.status;
-        //         owner = i.owner;
-        //         listime = i.listime;
-        //     });
-        // };
-        // backupItems := Buffer.toArray(ibs);
-        // let rb = Buffer.Buffer<(Nat, ItemTypes.Item)>(backupItems.size());
-        // for(bi in backupItems.vals()){
-        //     var ntype:ItemTypes.Itype = #nft;
-        //     switch(bi.itype){
-        //         case(#NFT){
-        //             ntype:= #nft;
-        //         };
-        //         case(#SERVICE){
-        //             ntype:= #service;
-        //         };
-        //         case(#MERCHANDIS){
-        //             ntype:= #merchandise;
-        //         };
-        //         case(#OTHER){
-        //             ntype:= #other;
-        //         };                                
-        //     };
-        //     var nstatus: ItemTypes.ItemStatus = #list;
-        //     switch(bi.status){
-        //         case(#list){
-        //             nstatus := #list;
-        //         };
-        //         case(#locked(p)){
-        //             nstatus := #pending;
-        //         };
-        //         case(#sold){
-        //             nstatus := #sold;
-        //         };
-                                              
-        //     };
-        //     rb.add((bi.id,{
-        //         id = bi.id;
-        //          name = bi.name;
-        //          description = "";
-        //         image = bi.image;
-        //         itype = ntype;
-        //         price  = bi.price;
-        //         currency  = bi.currency;
-        //         status = nstatus;
-        //         owner = bi.owner;
-        //         listime = bi.listime;
-        //     }))
-
-        // };
-        // _upgradeItems := Buffer.toArray(rb);
+       
     };
 
     public query func getBackupItems(): async [UpgradeTypes.U_Item]{

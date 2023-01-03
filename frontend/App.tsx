@@ -3,29 +3,47 @@ import {
   BrowserRouter,
   Routes,
   Route,
-  Link,
+
 } from "react-router-dom";
+import Header from './header'
 
-import * as profile from "./api/profile";
-import 'react-notifications/lib/notifications.css';
-import { NotificationContainer } from 'react-notifications';
 
+import { makeStyles } from "@mui/material";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Store from "./components/Store";
-
+import { Link, Slider, styled } from '@mui/material'
 import { Profile } from "./pages/Profile"
 import { Home } from "./pages/Home";
+
 
 export default () => {
 
 
+  const Root = styled('div')`
+  padding: 1% 2% 10vh 2%;
+  width: 100%;
+  min-height: 95vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  & a {
+    text-decoration: none;
+    color: ${({ theme: { palette } }) => palette.primary.main};
+  }
+`
   return (
-    <BrowserRouter>      
+    <BrowserRouter>
       <Store>
-       {/* <NotificationContainer/> */}
-        <Routes>
-          <Route path="/:id" element={<Profile />} />
-          <Route path="/" element={<Home />} />
-        </Routes>
+        <Root>
+          <Header/>
+          <ToastContainer />
+          <Routes>
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </Root>
       </Store>
     </BrowserRouter>
 

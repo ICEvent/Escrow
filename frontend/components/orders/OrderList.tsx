@@ -33,11 +33,13 @@ export default () => {
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
                         <TableRow>
+                             <TableCell>ID</TableCell>
                             <TableCell>Order Item</TableCell>
-                            <TableCell align="right">Price</TableCell>
-                            <TableCell align="right">Buyer/Seller</TableCell>
-
+                            <TableCell align="right">Amount</TableCell>
                             <TableCell align="right">Order Time</TableCell>
+                            <TableCell align="right"></TableCell>
+
+                            
                         </TableRow>
                     </TableHead>
                     <TableBody>

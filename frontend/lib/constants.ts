@@ -24,3 +24,25 @@ export const IDENTITY_PROVIDER = "https://identity.ic0.app";
 export const PAGING_LENGTH = 10;
 
 export const ORDER_DEFAULT_EXPIRED_DAYS = 5;
+
+export const MENU_HOME = "home";
+export const MENU_ORDERS = "orders";
+export const MENU_PROFILE = "profile";
+
+export const ORDER_STATUS_NEW = "new";
+export const ORDER_STATUS_DEPOSITED = "deposited";
+export const ORDER_STATUS_DELIVERED = "delivered";
+export const ORDER_STATUS_RECEIVED = "received";
+export const ORDER_STATUS_RELEASED = "released";
+export const ORDER_STATUS_REFUNDED = "refunded";
+export const ORDER_STATUS_CLOSED = "closed";
+export const ORDER_STATUS_CANCELED = "canceled";
+
+export const LISTITEM_STATUS_LIST = "list";
+export const LISTITEM_STATUS_PENDING = "pending";
+export const LISTITEM_STATUS_SOLD = "sold";
+export const LISTITEM_STATUS_UNLIST = "unlist";
+
+export const CURRENCY_ICP = "ICP";
+export const CURRENCY_ICET = "ICET";
+

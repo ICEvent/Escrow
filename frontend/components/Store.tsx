@@ -23,6 +23,8 @@ export type State = {
   escrow: ActorSubclass<ESCROWService._SERVICE>;
   isAuthed: boolean;
   principal: Principal | null;
+  loading: Boolean;
+  menu: String;
 
 };
 
@@ -36,6 +38,8 @@ const initialState: State = {
   agent: defaultAgent,
   isAuthed: false,
   principal: null,
+  loading: false,
+  menu: "home",
 
 };
 
@@ -48,6 +52,12 @@ type Action =
   | {
     type: "SET_PRINCIPAL";
     principal: Principal;
+   } | {
+      type: "SET_LOADING";
+      loading: Boolean;
+    } | {
+      type: "SET_MENU";
+      menu: String;
   };
 
 
@@ -67,6 +77,16 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         principal: action.principal,
       };
+      case "SET_LOADING":
+        return {
+          ...state,
+          loading: action.loading,
+        };   
+        case "SET_MENU":
+          return {
+            ...state,
+            menu: action.menu,
+          };     
     default:
       return { ...state };
 
@@ -133,6 +153,32 @@ export const useSetAgent = () => {
     }
   };
 };
+
+export const useLoading = () => {
+  const { dispatch, state } = useGlobalContext();
+  return {
+    loading: state.loading,
+    setLoading: (loading: Boolean) => {
+      dispatch({
+        type: "SET_LOADING",
+        loading
+      });
+    }
+  }
+};
+
+export const useMenu= () => {
+  const { dispatch, state } = useGlobalContext();
+  return {
+    menu: state.menu,
+    setMenu: (menu: String) => {
+      dispatch({
+        type: "SET_MENU",
+        menu
+      });
+    }
+  }
+}
 
 
 export default Store;

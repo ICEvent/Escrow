@@ -18,8 +18,9 @@ import Dialog from '@mui/material/Dialog';
 import Tooltip from '@mui/material/Tooltip';
 
 import { useOneblock, useSetAgent, useGlobalContext, useEscrow } from "./Store";
-import { Profile } from "frontend/api/profile/profile.did";
+import { Profile } from "../api/profile/profile.did";
 import OrderList from "./orders/OrderList";
+import DarkModeToggle from "../header/DarkModeToggle";
 
 
 export default () => {
@@ -112,12 +113,12 @@ export default () => {
 
         </IconButton>
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          Transfer Safely with Open Escrow
+          ICEscrow
         </Typography>
         {isAuthed && <Button color="inherit" onClick={() => setOpenProfile(true)}>Profile</Button>}
         {!isAuthed && <Button color="inherit" onClick={login}>Login</Button>}
         {principal && <Tooltip title={principal.toString()}><Button color="inherit" onClick={logout}>{principal.toString().slice(0, 5) + "..." + principal.toString().slice(-5)}</Button></Tooltip>}
-
+        <DarkModeToggle />
       </Toolbar>
 
       <Dialog
