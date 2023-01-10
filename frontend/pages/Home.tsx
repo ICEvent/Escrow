@@ -1,9 +1,5 @@
 import React, { useState } from "react"
 import { useEffect } from "react"
-import { AuthClient } from "@dfinity/auth-client";
-import { HttpAgent, Identity } from "@dfinity/agent";
-
-import { ToastContainer, toast } from 'react-toastify';
 import { HOST } from "../lib/canisters";
 import { ONE_WEEK_NS, IDENTITY_PROVIDER, MENU_HOME, MENU_ORDERS, MENU_PROFILE } from "../lib/constants";
 
@@ -34,6 +30,7 @@ import { Profile } from "./Profile";
 import OrderList from "../components/orders/OrderList";
 
 
+
 const Home = () => {
 
   const escrow = useEscrow();
@@ -49,7 +46,10 @@ const Home = () => {
     loadOffers();
   }, [itemType]);
 
-  
+ 
+
+
+
 
   const loadOffers = () => {
     let sitype: Itype = { "nft": null };

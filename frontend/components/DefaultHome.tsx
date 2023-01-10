@@ -1,5 +1,4 @@
 import React, { useEffect,useState } from "react"
-import { useBalance, useCanister, useWallet, useConnect } from "@connect2ic/react"
 
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';

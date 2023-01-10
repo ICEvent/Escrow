@@ -52,3 +52,4 @@ Thumbs.db
 note.txt
 canister_ids.json
 .env
+package-lock.json
