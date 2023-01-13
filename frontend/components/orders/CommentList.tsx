@@ -8,28 +8,41 @@ import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import { Button } from '@mui/material';
-
+import { Button, Grid } from '@mui/material';
+import Paper from '@mui/material/Paper';
+import { styled } from '@mui/material/styles';
 import { Comment } from '../../api/escrow/escrow.did';
 import moment from 'moment';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
+import { useGlobalContext } from '../Store';
+
+const Item = styled(Paper)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+}));
+
+
 export default function Comments(props) {
+    const {state:{
+        principal
+    }} = useGlobalContext();
 
-    const [comment, setComment] = React.useState<string | null>();
-
-    const saveComment = () => {
-        if (comment) {
-            props.submit(comment);
-        };
-    };
-    const cl = props.comments.map(c =>
+    const [comments, setComments] = React.useState([]);
+    React.useEffect(()=>{
+        setComments(props.comments);
+    },[props.comments])
+    
+    const cl = comments.map(c =>
         <ListItem alignItems="flex-start" key={c.ctime}>
-        <ListItemAvatar>
-          <AccountCircleIcon />
-        </ListItemAvatar>
+            <ListItemAvatar>
+                <AccountCircleIcon />
+            </ListItemAvatar>
             <ListItemText
-                primary={c.user.toString().slice(0,5) +"..."+ c.user.toString().slice(-5)}
+                primary={(c.user.toString() == principal.toString() ? "(you)" :c.user.toString().slice(0, 5) + "..." + c.user.toString().slice(-5))}
                 secondary={
                     <React.Fragment>
                         <Typography
@@ -40,27 +53,18 @@ export default function Comments(props) {
                         >
                             {moment.unix(parseInt(c.ctime) / 1000000000).format("YYYY-MM-DD hh:mm")}
                         </Typography>
-                        {c.comment}
+                        - {c.comment}
                     </React.Fragment>
                 }
             />
         </ListItem>
     );
     return (
-        <Box>
-            <TextField
-                id="standard-multiline-static"
-                
-                defaultValue=""
-                variant="standard"
-                fullWidth
-                onChange={e => setComment(e.target.value)}
-            />
-            <Button variant='contained' onClick={saveComment} >Comment</Button>
-            <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
 
-                {cl}
-            </List>
-        </Box>
+        <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+            {cl}
+        </List>
+
+
     );
 }

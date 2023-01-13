@@ -23,8 +23,10 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { toast } from 'react-toastify';
 
-import { useEscrow, useGlobalContext } from '../Store';
-import Comments from './OrderComments';
+import { useEscrow, useGlobalContext, useLoading } from '../Store';
+import CommentButton from './CommentButton';
+import Comments from './CommentList';
+
 
 
 export default (props) => {
@@ -35,7 +37,8 @@ export default (props) => {
     } } = useGlobalContext();
     const escrow = useEscrow();
 
-    const order = props.order;
+    const [order, setOrder] = React.useState(props.order);
+    const [comments, setComments] = React.useState(props.order.comments);
     const [status, setStatus] = React.useState<string>(Object.getOwnPropertyNames(order.status)[0])
 
     const currency = Object.getOwnPropertyNames(order.currency)[0];
@@ -47,11 +50,24 @@ export default (props) => {
                 status == ORDER_STATUS_RECEIVED ? 4 :
                     status == ORDER_STATUS_CLOSED ? 5 : 1;
 
-    const [loading, setLoading] = React.useState(false)
+    const { setLoading } = useLoading();
     const [confirmed, setConfirmed] = React.useState(false)
     const [balance, setBalance] = React.useState(0)
+
+
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setConfirmed(event.target.checked);
+    };
+
+    const loadOrder = () => {
+        // console.log("reloading order")
+        setLoading(true);
+        escrow.getOrder(order.id).then(res=>{
+            setLoading(false)
+            // console.log(res[0]);
+            if(res[0]){setComments(res[0].comments)}
+ 
+        });
     };
 
     function fetchBalance() {
@@ -128,17 +144,7 @@ export default (props) => {
         })
     };  
 
-    const saveComment = (c) => {
-        setLoading(true);
-        escrow.comment(order.id, c).then(res=>{
-            setLoading(false);
-            if(res["ok"]){
-                toast.success("saved comment");
-            }else{
-                toast.error(res["err"])
-            };
-        })
-    }
+
     return (
         <TableContainer component={Paper}>
             <Table sx={{ minWidth: 700 }} aria-label="spanning table">
@@ -168,12 +174,12 @@ export default (props) => {
 
 
                     <TableRow>
-                        <TableCell align="right">Buyer</TableCell>
+                        <TableCell align="right">Buyer {order.buyer.toString() == principal.toString() ? "(you)" : null}</TableCell>
                         <TableCell >{order.buyer.toString()}</TableCell>
                     </TableRow>
 
                     <TableRow>
-                        <TableCell align="right">Seller</TableCell>
+                        <TableCell align="right">Seller {order.seller.toString() == principal.toString() ? "(you)" : null}</TableCell>
                         <TableCell >{order.seller.toString()}</TableCell>
                     </TableRow>
 
@@ -242,20 +248,16 @@ export default (props) => {
                             {status == ORDER_STATUS_CANCELED && principal.toString() == order.buyer.toString() && <Button variant="contained">Request to refund</Button>}
                             {status == ORDER_STATUS_RECEIVED && principal.toString() == order.seller.toString() && <Button variant="contained"  onClick={release}>Request to release fund</Button>}
                             {status == ORDER_STATUS_NEW && <Button disabled={!confirmed} onClick={cancelOrder}>Cancel</Button>}
+
+                            <CommentButton id={order.id} reload={loadOrder}/>
                         </TableCell>
                     </TableRow>
-
+                           
                 </TableBody>
 
 
             </Table>
-            <Comments comments={order.comments} submit={saveComment}/>
-            <Backdrop
-                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                open={loading}
-            >
-                <CircularProgress color="inherit" />
-            </Backdrop>
+            <Comments comments={comments}/>
         </TableContainer>
 
     )

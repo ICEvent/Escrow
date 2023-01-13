@@ -5,14 +5,18 @@ import {
   Route,
 
 } from "react-router-dom";
-import Header from './header'
+
+
 
 
 import { makeStyles } from "@mui/material";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Store from "./components/Store";
 import { Link, Slider, styled } from '@mui/material'
+
+import Store from "./components/Store";
+import Header from './header';
+// import Navbar from "./components/Navbar";
 import { Profile } from "./pages/Profile"
 import { Home } from "./pages/Home";
 
@@ -25,8 +29,7 @@ export default () => {
   width: 100%;
   min-height: 95vh;
   display: flex;
-  justify-content: center;
-  align-items: center;
+
 
   & a {
     text-decoration: none;

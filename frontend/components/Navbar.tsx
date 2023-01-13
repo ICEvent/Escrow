@@ -122,11 +122,11 @@ export default () => {
       </Toolbar>
 
       <Dialog
-      maxWidth="md"
-      fullWidth
-      onClose={()=>setOpenProfile(false)} open={openProfile}>
+        maxWidth="md"
+        fullWidth
+        onClose={() => setOpenProfile(false)} open={openProfile}>
         <DialogTitle>Orders</DialogTitle>
-          <OrderList/>
+        <OrderList />
       </Dialog>
     </AppBar>
 

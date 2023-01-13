@@ -17,8 +17,8 @@ import Link from '@mui/material/Link';
 import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
-import { useOneblock } from "./Store";
-import { requirePropFactory } from "@mui/material";
+import { useOneblock } from "../Store";
+
 
 interface State {
   id: string;
@@ -99,7 +99,7 @@ const ProfileForm = (props) => {
       console.log(res)
       setProgress(false)
       if (res["ok"]) {
-        props.reload();
+        props.reload ? props.reload() : null;
       } else {
         setMessage(res["err"])
       }
@@ -152,7 +152,7 @@ const ProfileForm = (props) => {
           sx={{ m: 1 }}
           value={values.id}
           onChange={handleChange('id')}
-          disabled={props.profile}
+          disabled={props.profile ? true : false}
           InputProps={{
             startAdornment: <InputAdornment position="start">@</InputAdornment>,
           }}
@@ -183,7 +183,7 @@ const ProfileForm = (props) => {
 
         {props.profile && <Button variant="contained" disabled={progress} onClick={saveProfile}>{progress ? <CircularProgress /> : "Save"} </Button>}
         {!props.profile && <Button variant="contained" disabled={progress} onClick={createProfile}>{progress ? <CircularProgress /> : "Create"} </Button>}
-        {props.profile && <Link p={2} href={"/" + props.profile.id} target={"_blank"}>Open</Link>}
+        {props.profile && <Link p={2} href={"https://oneblock.page/" + props.profile.id} target={"_blank"}>Open</Link>}
         {message && <Alert severity="warning">{message}</Alert>}
       </Box>
     </Container>

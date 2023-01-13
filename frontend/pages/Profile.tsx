@@ -13,28 +13,58 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 
-import { useGlobalContext } from "../components/Store";
+
+import { Profile } from "../api/profile/profile.did";
+
+import { useGlobalContext, useOneblock } from "../components/Store";
+import { ProfileForm } from "../components/profile/ProfileForm";
 
 const Profile = () => {
 
-  const { state : {
+  const { state: {
     principal
-  }} = useGlobalContext()
+  } } = useGlobalContext()
+
+  const oneblock = useOneblock();
+
+  const [profile, setProfile] = useState<Profile | null>();
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = () => {
+    oneblock.getMyProfile().then(res => {
+      if (res[0]) {
+        setProfile(res[0]);
+      };
+    });
+  };
 
   return (
 
-        <Card >
-          <CardContent>
-            <Typography gutterBottom  component="div">
-              Principal : {principal.toString()}
-            </Typography>
-            <Typography gutterBottom  component="div">
-              Balance : 0
-            </Typography>
-          </CardContent>
+    <ProfileForm profile={profile} reload={loadProfile}/>
+    // <Card >
+    //   {profile &&
+    //     <CardMedia
+    //       component="img"
+    //       height="194"
+    //       image={profile.pfp}
+    //       alt="PFP"
+    //     />
+    //   }
+    //   <CardContent>
+    //     <Typography gutterBottom variant="h5" component="div">
+    //       {profile ? profile.name : principal.toString()}
+    //     </Typography>
 
-        </Card>
-       
+    //     <Typography variant="body2" color="text.secondary">
+    //       {profile ? profile.bio : ""}
+    //     </Typography>
+    //   </CardContent>
+
+    // </Card>
+
   )
 }
 
