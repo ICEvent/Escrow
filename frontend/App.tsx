@@ -19,6 +19,7 @@ import Header from './header';
 // import Navbar from "./components/Navbar";
 import { Profile } from "./pages/Profile"
 import { Home } from "./pages/Home";
+import Item from "./pages/Item";
 
 
 export default () => {
@@ -44,6 +45,7 @@ export default () => {
           <ToastContainer />
           <Routes>
             <Route path="/profile" element={<Profile />} />
+            <Route path="/item/:id" element={<Item />} />
             <Route path="/" element={<Home />} />
           </Routes>
         </Root>

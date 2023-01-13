@@ -9,7 +9,7 @@ import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
-import { Tooltip } from '@mui/material';
+import { Tooltip,Dialog } from '@mui/material';
 import Snackbar, { SnackbarOrigin } from '@mui/material/Snackbar';
 import Alert from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -26,7 +26,7 @@ import { toast } from 'react-toastify';
 import moment from 'moment';
 import { CURRENCY_ICET, CURRENCY_ICP, LEDGER_E6S, LEDGER_E8S, ORDER_DEFAULT_EXPIRED_DAYS } from '../../lib/constants';
 
-
+import OfferDetail from "./OfferDetail";
 
 export default (props) => {
 
@@ -37,6 +37,7 @@ export default (props) => {
     const escrow = useEscrow();
 
     const [loading, setLoading] = React.useState(false);
+    const [openOfferDetail, setOpenOfferDetail] = React.useState(false);
     const currency = Object.getOwnPropertyNames(props.offer.currency)[0] == CURRENCY_ICP ? CURRENCY_ICP : CURRENCY_ICET;
 
     const price = currency == CURRENCY_ICP ? parseInt(props.offer.price) / LEDGER_E8S : parseInt(props.offer.price) / LEDGER_E6S;
@@ -82,20 +83,30 @@ export default (props) => {
             <ListItem
             key={props.offer.id}
             secondaryAction={
-              <IconButton disabled={loading || !isAuthed} onClick={buyit} edge="end" aria-label="comments">
-                <ShoppingCartIcon />
-              </IconButton>
+                <ListItemText>
+                    {"$" + currency + " " + price}
+                </ListItemText>
             }
             disablePadding
           >
-            <ListItemButton role={undefined}   dense>
+            <ListItemButton role={undefined} onClick={()=>setOpenOfferDetail(true)}   dense>
                 <ListItemIcon>
                 {loading && <Box sx={{ display: 'flex' }}>
                         <CircularProgress />
                     </Box>}
                 </ListItemIcon>
-              <ListItemText id={props.offer.id} primary={props.offer.name} secondary={"$"+currency+" "+price}/>
+              <ListItemText id={props.offer.id} primary={props.offer.name}/>
             </ListItemButton>
+
+            <Dialog
+                maxWidth="md"
+                fullWidth
+                disableEscapeKeyDown={false}
+                onClose={() => setOpenOfferDetail(false)}
+                open={openOfferDetail}>
+                
+                <OfferDetail offer={props.offer} close={()=>setOpenOfferDetail(false)}/>
+            </Dialog>
           </ListItem>
           
     );

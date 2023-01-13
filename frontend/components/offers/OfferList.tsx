@@ -18,6 +18,7 @@ import { Itype } from "../../api/escrow/escrow.did"
 import { Item } from "../../api/escrow/escrow.did";
 import { LIST_ITEM_NFT, LIST_ITEM_COIN, LIST_ITEM_MERCHANDISE, LIST_ITEM_SERVICE, LIST_ITEM_OTHER } from "../../lib/constants";
 import OfferItem from './OfferItem';
+import { Box } from '@mui/system';
 
 export interface DialogTitleProps {
     id: string;
@@ -105,7 +106,7 @@ export default () => {
         );
     }
     const ol =  offers.map(o =>
-        itemType == LIST_ITEM_NFT ? <OfferCard key={o.id} offer={o} /> : <OfferItem key={o.id} offer={o}/>
+        (itemType == LIST_ITEM_NFT || itemType == LIST_ITEM_MERCHANDISE ) ? <OfferCard key={o.id} offer={o} /> : <OfferItem key={o.id} offer={o}/>
     )
 
 
@@ -127,7 +128,7 @@ export default () => {
                 <Button variant={itemType == LIST_ITEM_OTHER ? "outlined" : "text"} onClick={() => setItemType(LIST_ITEM_OTHER)}>Others</Button>
             </Stack>
 
-            {itemType == LIST_ITEM_NFT && <Grid
+            {(itemType == LIST_ITEM_NFT || itemType == LIST_ITEM_MERCHANDISE) && <Grid
                 container
                 spacing={2}
                 direction="row"
@@ -136,9 +137,12 @@ export default () => {
                 {ol}
             </Grid>}
             {itemType != LIST_ITEM_NFT &&
+                itemType != LIST_ITEM_MERCHANDISE &&
+            <Box>
                 <List>
                     {ol}
                 </List>
+                </Box>
             }
             <Dialog
                     maxWidth="md"

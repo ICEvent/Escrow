@@ -133,12 +133,12 @@ export default function ListItemForm(props) {
                         </Select>
                     </FormControl>
                 </Grid>
-                {values.itype == LIST_ITEM_NFT && <Grid item xs={12}>
+                {(values.itype == LIST_ITEM_NFT || values.itype == LIST_ITEM_MERCHANDISE) && <Grid item xs={12}>
                     <FormControl fullWidth >
                         <TextField
                             id="outlined-name"
                             name="image"
-                            label="NFT url"
+                            label="NFT/Mech image url"
                             value={values.image}
                             onChange={handleChange}
 

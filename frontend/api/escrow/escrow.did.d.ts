@@ -30,6 +30,7 @@ export interface EscrowService {
   'getAllOrders' : ActorMethod<[bigint], Array<Order>>,
   'getBackupItems' : ActorMethod<[], Array<U_Item>>,
   'getBalanceBySub' : ActorMethod<[bigint, Currency__1], Balance>,
+  'getItem' : ActorMethod<[bigint], [] | [Item]>,
   'getItemsSize' : ActorMethod<[], bigint>,
   'getMyAccountId' : ActorMethod<[bigint], string>,
   'getMyBalanceBySub' : ActorMethod<[bigint, Currency__1], Balance>,

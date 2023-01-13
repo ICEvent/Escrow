@@ -140,6 +140,7 @@ type EscrowService =
    getAllOrders: (nat) -> (vec Order);
    getBackupItems: () -> (vec U_Item) query;
    getBalanceBySub: (nat, Currency__1) -> (Balance);
+   getItem: (nat) -> (opt Item) query;
    getItemsSize: () -> (nat) query;
    getMyAccountId: (nat) -> (text) query;
    getMyBalanceBySub: (nat, Currency__1) -> (Balance);

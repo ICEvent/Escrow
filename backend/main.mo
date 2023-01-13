@@ -918,6 +918,9 @@ actor class EscrowService() = this {
         Page.getArrayPage(titems, page, default_page_size)
     };
 
+    public query func getItem(id: Nat): async ?ItemTypes.Item{
+        items.retrieve(id)
+    };
     // public shared ({ caller }) func lockItem(id : Nat) : async Result.Result<Nat, Text> {
     //     if (Principal.isAnonymous(caller)) {
     //         #err("no authenticated")
