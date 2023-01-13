@@ -6,7 +6,7 @@ import { idlFactory } from "./profile.did.js";
 export { idlFactory } from "./profile.did.js";
 
 // CANISTER_ID is replaced by webpack based on node environment
-export const canisterId = CANISTER_ONEBLOCK;// process.env.PROFILE_CANISTER_ID;
+export const canisterId =  process.env.PROFILE_CANISTER_ID;
 
 export const createActor = (agent,actorOptions) => {
   // const agent = options.agent || new HttpAgent({ ...options.agentOptions });

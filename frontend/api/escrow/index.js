@@ -4,7 +4,7 @@ import { Actor, HttpAgent } from "@dfinity/agent";
 import { idlFactory } from './escrow.did.js';
 export { idlFactory } from './escrow.did.js';
 // CANISTER_ID is replaced by webpack based on node environment
-export const canisterId = "oslfo-7iaaa-aaaag-qakra-cai";
+export const canisterId =  process.env.ESCROW_CANISTER_ID;
 
 /**
  * 

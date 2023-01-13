@@ -129,7 +129,7 @@ const Header: FC = () => {
 
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={() => setMenu(MENU_HOME)}>
-            ICEscrow
+            BlockList
           </Typography>
 
           {isAuthed && <Button color="inherit" onClick={handleClick}>
