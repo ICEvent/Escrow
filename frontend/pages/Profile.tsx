@@ -35,6 +35,7 @@ const Profile = () => {
 
   const loadProfile = () => {
     oneblock.getMyProfile().then(res => {
+      console.log(res)
       if (res[0]) {
         setProfile(res[0]);
       };

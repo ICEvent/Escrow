@@ -13,9 +13,6 @@ import * as ONEBLOCK from "../api/profile/index";
 import ESCROWService from "../api/escrow/escrow.did";
 import * as ESCROW from "../api/escrow/index";
 
-import { CANISTER_ONEBLOCK } from "frontend/lib/constants";
-
-
 
 export type State = {
   agent: HttpAgent;

@@ -1,5 +1,4 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
-import { CANISTER_ONEBLOCK } from "../../lib/constants";
 
 // Imports and re-exports candid interface
 import { idlFactory } from "./profile.did.js";

@@ -4,7 +4,7 @@ import path from "path"
 import dfxJson from "./dfx.json"
 import fs from "fs"
 
-const isDev = process.env["DFX_NETWORK"] !== "ic"
+const isDev = false;//process.env["DFX_NETWORK"] !== "ic"
 
 type Network = "ic" | "local"
 
@@ -46,7 +46,7 @@ const aliases = Object.entries(dfxJson.canisters).reduce(
   },
   {},
 )
-
+console.log(canisterIds)
 // Generate canister ids, required by the generated canister code in .dfx/local/canisters/*
 // This strange way of JSON.stringifying the value is required by vite
 const canisterDefinitions = Object.entries(canisterIds).reduce(
@@ -62,6 +62,7 @@ const canisterDefinitions = Object.entries(canisterIds).reduce(
 // Gets the port dfx is running on from dfx.json
 const DFX_PORT = dfxJson.networks.local.bind.split(":")[1]
 
+console.log(canisterDefinitions)
 // See guide on how to configure Vite at:
 // https://vitejs.dev/config/
 export default defineConfig({
