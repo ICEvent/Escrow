@@ -32,7 +32,6 @@ export default (props) => {
 
     const { state: {
         isAuthed,
-        principal
     } } = useGlobalContext();
     const escrow = useEscrow();
 

@@ -45,6 +45,7 @@ actor class EscrowService() = this {
 
     type Order = Types.Order;
     type NewOrder = Types.NewOrder;
+    type NewSellOrder = Types.NewSellOrder;
     type Log = Types.Log;
     type Comment = Types.Comment;
 
@@ -95,14 +96,103 @@ actor class EscrowService() = this {
 
     let items = Items.Items(_upgradeItemId, _upgradeItems);
 
+    public shared ({ caller }) func buy(newOrder : NewOrder) : async Result.Result<Nat, Text> {
+
+        if (Principal.isAnonymous(caller)) {
+
+            #err("no authenticated");
+        }else if(newOrder.memo == ""){
+            #err("memo is required")
+        } else if(newOrder.amount == 0) {
+            #err("your order amount must be greater than 0")
+        }else{
+            let orderid = nextOrderId;
+
+            orders.put(
+                orderid,
+                {
+                    id = orderid;
+                    buyer = caller;
+                    seller = newOrder.seller;
+                    memo = newOrder.memo;
+                    amount = newOrder.amount;
+                    currency = newOrder.currency;
+                    account = getNewAccountId();
+                    blockin = 0;
+                    blockout = 0;
+                    status = #new;
+                    expiration = newOrder.expiration;
+                    createtime = Time.now();
+                    updatetime = Time.now();
+                    lockedby = caller;
+                    comments = [];
+                    logs = [{
+                        ltime = Time.now();
+                        log = "create buying order";
+                        logger = #buyer
+                    }]
+                },
+            );
+
+            nextOrderId := nextOrderId +1;
+            #ok(orderid)
+        };
+
+    };
+ public shared ({ caller }) func sell(newOrder : NewSellOrder) : async Result.Result<Nat, Text> {
+
+        if (Principal.isAnonymous(caller)) {
+
+            #err("no authenticated");
+        }else if(newOrder.memo == ""){
+            #err("memo is required")
+        } else if(newOrder.amount == 0) {
+            #err("your order amount must be greater than 0")
+        }else{
+            let orderid = nextOrderId;
+
+            orders.put(
+                orderid,
+                {
+                    id = orderid;
+                    buyer = newOrder.buyer;
+                    seller = caller;
+                    memo = newOrder.memo;
+                    amount = newOrder.amount;
+                    currency = newOrder.currency;
+                    account = getNewAccountId();
+                    blockin = 0;
+                    blockout = 0;
+                    status = #new;
+                    expiration = newOrder.expiration;
+                    createtime = Time.now();
+                    updatetime = Time.now();
+                    lockedby = caller;
+                    comments = [];
+                    logs = [{
+                        ltime = Time.now();
+                        log = "create selling order";
+                        logger = #buyer
+                    }]
+                },
+            );
+
+            nextOrderId := nextOrderId +1;
+            #ok(orderid)
+        };
+
+    };
     //buyer create a new order
     public shared ({ caller }) func create(newOrder : NewOrder) : async Result.Result<Nat, Text> {
 
         if (Principal.isAnonymous(caller)) {
 
             #err("no authenticated");
-
-        } else {
+        }else if(newOrder.memo == ""){
+            #err("memo is required")
+        } else if(newOrder.amount == 0) {
+            #err("your order amount must be greater than 0")
+        }else{
             let orderid = nextOrderId;
 
             orders.put(

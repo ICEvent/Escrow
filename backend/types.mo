@@ -58,6 +58,14 @@ module {
         expiration: Int;
     };
 
+    public type NewSellOrder = {
+        buyer: Principal;
+        memo: Text;
+        amount: Nat64;
+        currency: Currency;
+        expiration: Int;
+    };
+
     public type Comment = {
         user: Principal;
         comment: Text;

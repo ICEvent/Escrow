@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import OfferCard from './OfferCard';
-import { Button, Divider, List, Stack } from '@mui/material';
+import { Button, DialogContent, Divider, List, Stack } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ListItemForm from './ListItemForm';
 import { toast } from 'react-toastify';
@@ -14,11 +14,12 @@ import IconButton from '@mui/material/IconButton';
 
 import { useEscrow, useLoading, useGlobalContext } from '../Store';
 
-import { Itype } from "../../api/escrow/escrow.did"
+import { Itype, NewOrder, NewSellOrder } from "../../api/escrow/escrow.did"
 import { Item } from "../../api/escrow/escrow.did";
 import { LIST_ITEM_NFT, LIST_ITEM_COIN, LIST_ITEM_MERCHANDISE, LIST_ITEM_SERVICE, LIST_ITEM_OTHER } from "../../lib/constants";
 import OfferItem from './OfferItem';
 import { Box } from '@mui/system';
+import OrderForm from '../orders/OrderForm';
 
 export interface DialogTitleProps {
     id: string;
@@ -33,6 +34,7 @@ export default () => {
     const escrow = useEscrow();
     const { setLoading } = useLoading()
     const [openListForm, setOpenListForm] = React.useState(false)
+    const [openOrderForm, setOpenOrderForm] = React.useState(false)
 
     const [itemType, setItemType] = React.useState(LIST_ITEM_NFT)
     const [offers, setOffers] = React.useState<Item[]>([]);
@@ -82,6 +84,45 @@ export default () => {
         })
     };
 
+    function buy(newOrder: NewOrder){
+        try{
+            setLoading(true)
+            escrow.buy(newOrder).then(res=>{
+                setLoading(false);
+                if(res["ok"]){
+                    toast.success("your order has created!")
+                    
+                }else{
+                    toast.error(res["err"].toString());
+                }
+                
+            });
+            setOpenOrderForm(false);
+        }catch(err){
+            toast.error(err.toString())
+        };
+
+    };
+
+    function sell(newOrder: NewSellOrder){
+        try{
+            setLoading(true)
+            escrow.sell(newOrder).then(res=>{
+                setLoading(false);
+                if(res["ok"]){
+                    toast.success("your order has created!")
+                    
+                }else{
+                    toast.error(res["err"].toString());
+                }
+                
+            });
+            setOpenOrderForm(false);
+        }catch(err){
+            toast.error(err.toString())
+        };
+
+    };
     function BootstrapDialogTitle(props: DialogTitleProps) {
         const { children, onClose, ...other } = props;
 
@@ -115,6 +156,7 @@ export default () => {
         <React.Fragment>
 
             {isAuthed && <Button variant='contained' onClick={() => setOpenListForm(true)}>List My Item</Button>}
+            {isAuthed && <Button variant='contained' onClick={() => setOpenOrderForm(true)}>New Escrow Order</Button>}
             <Divider />
             <Stack direction="row"
                 sx={{ mt: 1 }}
@@ -154,6 +196,21 @@ export default () => {
                         Input Item Information
                     </BootstrapDialogTitle>
                     <ListItemForm submit={saveList} itype={itemType}/>
+                </Dialog>
+
+                <Dialog
+                    maxWidth="md"
+                    fullWidth
+                    disableEscapeKeyDown={false}
+                    open={openOrderForm}>
+
+                    <BootstrapDialogTitle id="customized-dialog-title" onClose={() => setOpenOrderForm(false)}>
+                        New Escrow Contract
+                    </BootstrapDialogTitle>
+                    <DialogContent>
+                    <OrderForm buy={buy} sell={sell}/>
+                    </DialogContent>
+                    
                 </Dialog>
         </React.Fragment>
     );

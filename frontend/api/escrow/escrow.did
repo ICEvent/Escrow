@@ -62,6 +62,14 @@ type Order =
    status: Status;
    updatetime: int;
  };
+type NewSellOrder = 
+ record {
+   amount: nat64;
+   buyer: principal;
+   currency: Currency;
+   expiration: int;
+   memo: text;
+ };
 type NewOrder = 
  record {
    amount: nat64;
@@ -128,6 +136,7 @@ type EscrowService =
  service {
    accountBalance: (AccountIdText__1, Currency__1) -> (Balance);
    availableCycles: () -> (nat) query;
+   buy: (NewOrder) -> (Result);
    cancel: (nat) -> (Result);
    changeItemStatus: (nat, ItemStatus) -> (Result);
    close: (nat) -> (Result);
@@ -157,6 +166,7 @@ type EscrowService =
    refund: (nat) -> (Result);
    release: (nat) -> (Result);
    searchItems: (Itype, nat) -> (vec Item) query;
+   sell: (NewSellOrder) -> (Result);
  };
 type EscrowAccount = 
  record {

@@ -2,13 +2,6 @@ export const idlFactory = ({ IDL }) => {
   const AccountIdText__1 = IDL.Text;
   const Currency__1 = IDL.Variant({ 'ICP' : IDL.Null, 'ICET' : IDL.Null });
   const Balance = IDL.Variant({ 'e6s' : IDL.Nat64, 'e8s' : IDL.Nat64 });
-  const Result = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
-  const ItemStatus = IDL.Variant({
-    'pending' : IDL.Null,
-    'list' : IDL.Null,
-    'sold' : IDL.Null,
-    'unlist' : IDL.Null,
-  });
   const Currency = IDL.Variant({ 'ICP' : IDL.Null, 'ICET' : IDL.Null });
   const NewOrder = IDL.Record({
     'memo' : IDL.Text,
@@ -16,6 +9,13 @@ export const idlFactory = ({ IDL }) => {
     'expiration' : IDL.Int,
     'currency' : Currency,
     'amount' : IDL.Nat64,
+  });
+  const Result = IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text });
+  const ItemStatus = IDL.Variant({
+    'pending' : IDL.Null,
+    'list' : IDL.Null,
+    'sold' : IDL.Null,
+    'unlist' : IDL.Null,
   });
   const Status = IDL.Variant({
     'new' : IDL.Null,
@@ -115,9 +115,17 @@ export const idlFactory = ({ IDL }) => {
     'itype' : Itype,
     'price' : IDL.Nat64,
   });
+  const NewSellOrder = IDL.Record({
+    'memo' : IDL.Text,
+    'expiration' : IDL.Int,
+    'currency' : Currency,
+    'buyer' : IDL.Principal,
+    'amount' : IDL.Nat64,
+  });
   const EscrowService = IDL.Service({
     'accountBalance' : IDL.Func([AccountIdText__1, Currency__1], [Balance], []),
     'availableCycles' : IDL.Func([], [IDL.Nat], ['query']),
+    'buy' : IDL.Func([NewOrder], [Result], []),
     'cancel' : IDL.Func([IDL.Nat], [Result], []),
     'changeItemStatus' : IDL.Func([IDL.Nat, ItemStatus], [Result], []),
     'close' : IDL.Func([IDL.Nat], [Result], []),
@@ -153,6 +161,7 @@ export const idlFactory = ({ IDL }) => {
     'refund' : IDL.Func([IDL.Nat], [Result], []),
     'release' : IDL.Func([IDL.Nat], [Result], []),
     'searchItems' : IDL.Func([Itype, IDL.Nat], [IDL.Vec(Item)], ['query']),
+    'sell' : IDL.Func([NewSellOrder], [Result], []),
   });
   return EscrowService;
 };

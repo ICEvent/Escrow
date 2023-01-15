@@ -18,6 +18,7 @@ export interface EscrowAccount { 'id' : AccountIdText, 'index' : Subaccount }
 export interface EscrowService {
   'accountBalance' : ActorMethod<[AccountIdText__1, Currency__1], Balance>,
   'availableCycles' : ActorMethod<[], bigint>,
+  'buy' : ActorMethod<[NewOrder], Result>,
   'cancel' : ActorMethod<[bigint], Result>,
   'changeItemStatus' : ActorMethod<[bigint, ItemStatus], Result>,
   'close' : ActorMethod<[bigint], Result>,
@@ -46,6 +47,7 @@ export interface EscrowService {
   'refund' : ActorMethod<[bigint], Result>,
   'release' : ActorMethod<[bigint], Result>,
   'searchItems' : ActorMethod<[Itype, bigint], Array<Item>>,
+  'sell' : ActorMethod<[NewSellOrder], Result>,
 }
 export interface Item {
   'id' : bigint,
@@ -91,6 +93,13 @@ export interface NewOrder {
   'seller' : Principal,
   'expiration' : bigint,
   'currency' : Currency,
+  'amount' : bigint,
+}
+export interface NewSellOrder {
+  'memo' : string,
+  'expiration' : bigint,
+  'currency' : Currency,
+  'buyer' : Principal,
   'amount' : bigint,
 }
 export interface Order {
