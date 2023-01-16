@@ -112,7 +112,7 @@ export default (props) => {
                     autoFocus
                     margin="dense"
                     name="item"
-                    label="Describe your orderring item"
+                    label="Describe your ordering item"
                     fullWidth
                     variant="standard"
                     onChange={handleChange}
