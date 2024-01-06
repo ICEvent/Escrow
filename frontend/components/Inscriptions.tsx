@@ -15,14 +15,21 @@ import ListItem from "@mui/material/ListItem"
 import InputAdornment from "@mui/material/InputAdornment"
 import { Box } from "@mui/system"
 import { Principal } from "@dfinity/principal"
-
-import { useGlobalContext, useLoading, useIndexer, useCKETH } from "./Store"
+import { toast } from "react-toastify"
+import {
+  useGlobalContext,
+  useEscrow,
+  useLoading,
+  useIndexer,
+  useCKETH,
+} from "./Store"
 
 import {
   CANISTER_CKETH_INDEXER,
   CANISTER_ICRC_CKETH,
   ckETH_DECIMALS,
   ckETH_FEE,
+  LEDGER_E8S,
 } from "../lib/constants"
 export interface DialogTitleProps {
   id: string
@@ -33,16 +40,21 @@ export interface DialogTitleProps {
 const MyForm: React.FC = () => {
   const cketh = useCKETH()
   const indexer = useIndexer()
+  const escrow = useEscrow()
   const { setLoading } = useLoading()
   const [notice, setNotice] = useState<string | null>()
   const [holders, setHolders] = useState([])
+  const [price, setPrice] = useState<string>("")
   const [userid, setUserid] = useState<string>("")
   const [toUserid, setToUserid] = useState<string>("")
   const [sendAmmount, setSendAmount] = useState(1)
+  const [sellAmmount, setSellAmount] = useState(1)
+
   const [balance, setBalance] = useState(0)
   const [ckethBalance, setCkethBalance] = useState(0)
   const [allowance, setAllowance] = useState(0)
   const [openTransferForm, setOpenTransferForm] = useState(false)
+  const [openListForm, setOpenListForm] = useState(false)
 
   const {
     state: { isAuthed, principal },
@@ -94,6 +106,10 @@ const MyForm: React.FC = () => {
       setToUserid(value)
     } else if (name == "sendAmount") {
       setSendAmount(parseInt(value))
+    } else if (name == "sellAmount") {
+      setSellAmount(parseInt(value))
+    } else if (name == "price") {
+      setPrice(value)
     }
   }
 
@@ -128,7 +144,9 @@ const MyForm: React.FC = () => {
         created_at_time: [BigInt(moment().unix())],
         amount: BigInt(amt),
         expected_allowance: [],
-        expires_at: [amt == 0 ? BigInt(0) : BigInt(moment().add(1,"month").unix())],
+        expires_at: [
+          amt == 0 ? BigInt(0) : BigInt(moment().add(1, "month").unix()),
+        ],
       })
       //check allowance again
       let { allowance, expires_at } = await cketh.icrc2_allowance({
@@ -167,9 +185,37 @@ const MyForm: React.FC = () => {
     setLoading(false)
   }
 
-  async function dump() {    
-    let exp = await indexer.export(userid ? [Principal.fromText(userid)] : []);
+  async function dump() {
+    let exp = await indexer.export(userid ? [Principal.fromText(userid)] : [])
     setHolders(exp)
+  }
+
+  function listOrder() {
+    try {
+      setLoading(true)
+      escrow
+        .listItem({
+          name: "APE20",
+          description: "",
+          image: "",
+          itype: { coin: null },
+          price: BigInt(parseFloat(price) * LEDGER_E8S),
+          currency: { ICP: null },
+          status: { list: null },
+        })
+        .then((res) => {
+          setOpenListForm(false)
+          setLoading(false)
+          if (res["ok"]) {
+            toast.success("your order has created!")
+          } else {
+            toast.error(res["err"].toString())
+          }
+        })
+    } catch (err) {
+      setLoading(false)
+      toast.error(err.toString())
+    }
   }
 
   function BootstrapDialogTitle(props: DialogTitleProps) {
@@ -213,8 +259,10 @@ const MyForm: React.FC = () => {
   ))
   return (
     <>
-      <Alert sx={{mt:2}} severity="info">Inscription on ckETH</Alert>
-      <Grid container spacing={2} >
+      <Alert sx={{ mt: 2 }} severity="info">
+        Inscription on ckETH
+      </Alert>
+      <Grid container spacing={2}>
         <Grid item xs={12}>
           <TextField
             fullWidth
@@ -223,7 +271,7 @@ const MyForm: React.FC = () => {
             name="userid"
             value={userid}
             onChange={handleInputChange}
-            sx={{bgcolor: "background.paper"}}
+            sx={{ bgcolor: "background.paper" }}
           />
         </Grid>
         <Grid item xs={6}>
@@ -231,7 +279,6 @@ const MyForm: React.FC = () => {
             label="🍌🍌🍌 $GIG Balance"
             variant="outlined"
             value={balance}
-
           />
         </Grid>
         <Grid item xs={6}>
@@ -255,12 +302,25 @@ const MyForm: React.FC = () => {
 
           {isAuthed && (
             <Button
+              sx={{ mr: 1 }}
               variant="contained"
               type="button"
               onClick={() => setOpenTransferForm(true)}
               disabled={balance == 0 || ckethBalance == 0}
             >
               transfer
+            </Button>
+          )}
+
+          {isAuthed && balance > 0 && (
+            <Button
+              sx={{ mr: 1 }}
+              variant="contained"
+              type="button"
+              onClick={() => setOpenListForm(true)}
+              disabled={balance == 0}
+            >
+              sell
             </Button>
           )}
         </Grid>
@@ -309,7 +369,7 @@ const MyForm: React.FC = () => {
                       variant="outlined"
                       color="primary"
                       type="button"
-                      onClick={()=>approve(ckethBalance)}
+                      onClick={() => approve(ckethBalance)}
                     >
                       Approve
                     </Button>
@@ -322,7 +382,7 @@ const MyForm: React.FC = () => {
                       variant="outlined"
                       color="primary"
                       type="button"
-                      onClick={()=>approve(0)}
+                      onClick={() => approve(0)}
                     >
                       Revoke
                     </Button>
@@ -341,7 +401,8 @@ const MyForm: React.FC = () => {
               </Grid>
               <Grid item xs={16}>
                 <Alert style={{ marginTop: "10px" }} severity="info">
-                  Allow indexer spend  {allowance / ckETH_DECIMALS} ckETH on your behalf
+                  Allow indexer spend {allowance / ckETH_DECIMALS} ckETH on your
+                  behalf
                 </Alert>
                 {notice && <Alert severity="error">{notice}</Alert>}
               </Grid>
@@ -349,7 +410,57 @@ const MyForm: React.FC = () => {
           </form>
         </Box>
       </Dialog>
-
+      <Dialog
+        maxWidth="md"
+        fullWidth
+        disableEscapeKeyDown={false}
+        open={openListForm}
+      >
+        <BootstrapDialogTitle
+          id="customized-dialog-title"
+          onClose={() => setOpenListForm(false)}
+        >
+          Selling $GIG
+        </BootstrapDialogTitle>
+        <Box sx={{ m: 1, p: 2 }}>
+          <form>
+            <Grid container spacing={2}>
+              <Grid item xs={4}>
+                <TextField
+                  label="$GIG Amount to Sell"
+                  variant="outlined"
+                  name="sellAmount"
+                  value={sellAmmount}
+                  onChange={handleInputChange}
+                  style={{ marginRight: "10px" }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <TextField
+                  label="Price(ICP)"
+                  variant="outlined"
+                  name="price"
+                  value={price}
+                  onChange={handleInputChange}
+                  style={{ marginRight: "10px" }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <Button
+                  sx={{ mr: 1 }}
+                  variant="outlined"
+                  color="primary"
+                  type="button"
+                  onClick={listOrder}
+                  disabled={sellAmmount == 0}
+                >
+                  List
+                </Button>
+              </Grid>
+            </Grid>
+          </form>
+        </Box>
+      </Dialog>
       <List sx={{ mt: 1, width: "100%", bgcolor: "background.paper" }}>
         <ListItem
           key={"head"}
