@@ -25,7 +25,6 @@ export type State = {
   indexer: ActorSubclass<INDEXERService._SERVICE>
   isAuthed: boolean
   principal: Principal | null
-  identity: Identity | null
   loading: Boolean
   menu: String
 }
@@ -42,7 +41,6 @@ const initialState: State = {
   agent: defaultAgent,
   isAuthed: false,
   principal: null,
-  identity: null,
   loading: false,
   menu: "home",
 }
@@ -85,11 +83,7 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         principal: action.principal,
       }
-    case "SET_IDENTITY":
-      return {
-        ...state,
-        identity: action.identity,
-      }
+   
     case "SET_LOADING":
       return {
         ...state,
@@ -183,10 +177,7 @@ export const useSetIdentity = () => {
   }
 }
 
-export const useIdentity = () => {
-  const context = useGlobalContext()
-  return context.state.identity
-}
+
 export const useLoading = () => {
   const { dispatch, state } = useGlobalContext()
   return {

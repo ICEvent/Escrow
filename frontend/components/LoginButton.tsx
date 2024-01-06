@@ -16,11 +16,11 @@ import {
 } from "../lib/constants"
 import GoogleIcon from "@mui/icons-material/Google"
 
-import { useGlobalContext, useSetAgent ,useSetIdentity} from "../components/Store"
+import { useGlobalContext, useSetAgent } from "../components/Store"
 const HOST = "https://ic0.app"
 
 const DropdownMenu: React.FC = () => {
-  const setIdentity = useSetIdentity();
+
   const setAgent = useSetAgent()
   const [authClient, setAuthClient] = useState<any>()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -66,8 +66,7 @@ const DropdownMenu: React.FC = () => {
   const handleAuthenticated = async (authClient) => {
     // auth.signin(authClient,()=>{});
     const identity = authClient.getIdentity()
-    console.log("get identity: ", identity)
-    setIdentity(identity);
+
     setAgent({
       agent: new HttpAgent({
         identity,

@@ -8,7 +8,71 @@ module {
     public type Subaccount          = Nat;
     public type SubaccountNat8Arr   = [Nat8];
     public type SubaccountBlob      = Blob;
-    
+    public type EscrowAccount       =  {
+            index: Subaccount;
+            id: AccountIdText;
+        };
+    public type Balance = {
+        #e8s: Nat64;
+        #e6s: Nat64;
+    };    
+    public type Currency = {
+        #ICP;
+        #ICET;
+    };    
+    public type Status = {
+            #new;
+            #deposited;
+            #delivered;
+            #received;
+            #released;
+            #refunded;
+            #closed;
+            #canceled;
+        };
+    public type Order ={
+        id: Nat;
+        buyer: Principal;
+        seller: Principal;
+        memo: Text;
+        amount: Nat64;
+        currency: Currency;
+        account:EscrowAccount;
+        blockin: Nat64; 
+        blockout: Nat64;
+        createtime: Int;
+        lockedby: Principal;
+        status:Status;        
+        updatetime: Int;
+        expiration: Int;
+        comments: [Comment];
+        logs:[Log];
+    };
+
+  
+    public type NewOrder = {
+        seller: Principal;
+        memo: Text;
+        amount: Nat64;
+        currency: Currency;
+        expiration: Int;
+    };
+
+    public type Comment = {
+        user: Principal;
+        comment: Text;
+        ctime: Int;        
+    };
+
+    public type Log = {
+        ltime : Int;
+        log: Text;
+        logger: {
+            #buyer;
+            #seller;
+            #escrow;
+        };
+    };
     // LEDGER
     // Amount of ICP tokens, measured in 10^-8 of a token.
     public type ICP = {
@@ -36,7 +100,14 @@ module {
     // The caller can set it in a `transfer` call as a correlation identifier.
     public type Memo = Nat64;
 
-
+    public type TransferRequest = {
+        memo: Nat64;
+        from: Nat;
+        to: AccountIdText;
+        amount: Nat64;
+        currency: Currency;
+    };
+    
     // Arguments for the `transfer` call.
     public type TransferArgs = {
         // Transaction memo.

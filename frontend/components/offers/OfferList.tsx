@@ -11,7 +11,7 @@ import { toast } from "react-toastify"
 import Backdrop from "@mui/material/Backdrop"
 import CircularProgress from "@mui/material/CircularProgress"
 import IconButton from "@mui/material/IconButton"
-
+import AddIcon from '@mui/icons-material/Add';
 import { useEscrow, useLoading, useGlobalContext } from "../Store"
 
 import Inscriptions from "../Inscriptions"
@@ -163,12 +163,12 @@ export default () => {
   return (
     <React.Fragment>
       {isAuthed && (
-        <Button variant="contained" onClick={() => setOpenListForm(true)}>
+        <Button  sx={{ mr: 1, mbb: 1 }} variant="contained" onClick={() => setOpenListForm(true)} startIcon={<AddIcon />}>
           List My Item
         </Button>
       )}
       {isAuthed && (
-        <Button variant="contained" onClick={() => setOpenOrderForm(true)}>
+        <Button sx={{ mr: 1, mbb: 1 }} variant="contained" onClick={() => setOpenOrderForm(true)} startIcon={<AddIcon />}>
           New Escrow Order
         </Button>
       )}
@@ -185,7 +185,7 @@ export default () => {
           variant={itemType == LIST_ITEM_INSCRIPTION ? "outlined" : "text"}
           onClick={() => setItemType(LIST_ITEM_INSCRIPTION)}
         >
-          APE20
+          APE20($GIG)
         </Button>
         <Button
           variant={itemType == LIST_ITEM_NFT ? "outlined" : "text"}

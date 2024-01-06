@@ -4,12 +4,18 @@ import CloseIcon from "@mui/icons-material/Close"
 import DialogTitle from "@mui/material/DialogTitle"
 import Dialog from "@mui/material/Dialog"
 import IconButton from "@mui/material/IconButton"
-import InputAdornment from '@mui/material/InputAdornment';
+import Tooltip from "@mui/material/Tooltip"
+import List from "@mui/material/List"
+import ListItemButton from "@mui/material/ListItemButton"
+import ListItemText from "@mui/material/ListItemText"
+import ListItemIcon from "@mui/material/ListItemIcon"
+import ListItem from "@mui/material/ListItem"
+import InputAdornment from "@mui/material/InputAdornment"
 import { Box } from "@mui/system"
 import { Principal } from "@dfinity/principal"
 
-import { useGlobalContext, useLoading , useIdentity, useIndexer, useCKETH} from "./Store"
-import icblast from "@infu/icblast"
+import { useGlobalContext, useLoading, useIndexer, useCKETH } from "./Store"
+
 import {
   CANISTER_CKETH_INDEXER,
   CANISTER_ICRC_CKETH,
@@ -23,12 +29,11 @@ export interface DialogTitleProps {
 }
 
 const MyForm: React.FC = () => {
-
-    const identity = useIdentity();
-    const ckethActor = useCKETH();
-    const indexer = useIndexer();
+  const cketh = useCKETH()
+  const indexer = useIndexer()
   const { setLoading } = useLoading()
   const [notice, setNotice] = useState<string | null>()
+  const [holders, setHolders] = useState([])
   const [userid, setUserid] = useState<string>("")
   const [toUserid, setToUserid] = useState<string>("")
   const [sendAmmount, setSendAmount] = useState(1)
@@ -41,32 +46,35 @@ const MyForm: React.FC = () => {
     state: { isAuthed, principal },
   } = useGlobalContext()
 
-  let ic = icblast({identity:identity})
-
   useEffect(() => {
     if (isAuthed) {
       setUserid(principal.toString())
       loadWallet(principal.toString())
-      console.log(identity)
     }
+    dump()
   }, [principal])
 
   async function loadWallet(uid: string) {
     setLoading(true)
-    let indexer = await ic(CANISTER_CKETH_INDEXER)
-    let b = await indexer.balance_of(uid)
-    setBalance(parseInt(b))
 
-    let cketh = await ic(CANISTER_ICRC_CKETH)
-    let eth = await cketh.icrc1_balance_of({ owner: uid })
-    setCkethBalance(parseInt(eth))
+    let b = await indexer.balance_of(Principal.fromText(uid))
+    setBalance(Number(b))
+
+    let eth = await cketh.icrc1_balance_of({
+      owner: Principal.fromText(uid),
+      subaccount: [],
+    })
+    setCkethBalance(Number(eth))
     //check allowance
     let { allowance, expires_at } = await cketh.icrc2_allowance({
-      account: { owner: uid },
-      spender: { owner: CANISTER_CKETH_INDEXER },
+      account: { owner: Principal.fromText(uid), subaccount: [] },
+      spender: {
+        owner: Principal.fromText(CANISTER_CKETH_INDEXER),
+        subaccount: [],
+      },
     })
     console.log("allowance", allowance)
-    setAllowance(parseInt(allowance))
+    setAllowance(Number(allowance))
     setLoading(false)
   }
 
@@ -88,41 +96,44 @@ const MyForm: React.FC = () => {
     // Handle the form submission
     console.log(userid)
   }
-  async function check() {
-    setLoading(true)
-    let indexer = await ic(CANISTER_CKETH_INDEXER)
-    let b = await indexer.balance_of(userid)
-    setBalance(parseInt(b))
-    setLoading(false)
-  }
+
+  // async function check() {
+  //   setLoading(true)
+
+  //   let b = await indexer.balance_of(Principal.fromText(userid));
+  //   setBalance(Number(b))
+  //   setLoading(false)
+  // };
 
   async function approve() {
     setNotice(null)
     setLoading(true)
     try {
-      let cketh = await ic(CANISTER_ICRC_CKETH)
-      let p = Principal.fromText(CANISTER_CKETH_INDEXER);
+      let p = Principal.fromText(CANISTER_CKETH_INDEXER)
       console.log(p)
-      await ckethActor.icrc2_approve({
+      await cketh.icrc2_approve({
         spender: {
           owner: p,
-          'subaccount' : [] 
+          subaccount: [],
         },
-        'fee' : [],
-          'memo' : [],
-          'from_subaccount' : [] ,
-          'created_at_time' : [] ,
-          'amount' : BigInt(ckethBalance),
-          'expected_allowance' :[],
-          'expires_at' :[]
+        fee: [],
+        memo: [],
+        from_subaccount: [],
+        created_at_time: [],
+        amount: BigInt(ckethBalance),
+        expected_allowance: [],
+        expires_at: [],
       })
       //check allowance again
       let { allowance, expires_at } = await cketh.icrc2_allowance({
-        account: { owner: userid },
-        spender: { owner: CANISTER_CKETH_INDEXER },
+        account: { owner: Principal.fromText(userid), subaccount: [] },
+        spender: {
+          owner: Principal.fromText(CANISTER_CKETH_INDEXER),
+          subaccount: [],
+        },
       })
       console.log("allowance", allowance)
-      setAllowance(parseInt(allowance))
+      setAllowance(Number(allowance))
     } catch (err) {
       console.error(err)
       setNotice(Object.getOwnPropertyNames(err)[0])
@@ -134,9 +145,12 @@ const MyForm: React.FC = () => {
     setNotice(null)
     setLoading(true)
     try {
-    //   let indexer = await ic(CANISTER_CKETH_INDEXER)
+      //   let indexer = await ic(CANISTER_CKETH_INDEXER)
       let res = await indexer.op({
-        transfer: { to: Principal.fromText(toUserid), amount: BigInt(sendAmmount) },
+        transfer: {
+          to: Principal.fromText(toUserid),
+          amount: BigInt(sendAmmount),
+        },
       })
     } catch (err) {
       console.error(err)
@@ -146,6 +160,14 @@ const MyForm: React.FC = () => {
     await loadWallet(userid)
     setLoading(false)
   }
+
+  async function dump() {
+    setLoading(true)
+    let exp = await indexer.export(userid ? [Principal.fromText(userid)] : [])
+    setHolders(exp)
+    setLoading(false)
+  }
+
   function BootstrapDialogTitle(props: DialogTitleProps) {
     const { children, onClose, ...other } = props
 
@@ -169,54 +191,76 @@ const MyForm: React.FC = () => {
       </DialogTitle>
     )
   }
+
+  const holderList = holders.map((h) => (
+    <ListItem
+      key={h[0].toString()}
+      disablePadding
+      secondaryAction={
+        <ListItemButton role={undefined} dense>
+          {Number(h[1])}
+        </ListItemButton>
+      }
+    >
+      <ListItemButton role={undefined} dense>
+        <ListItemText id={h[0].toString()} primary={h[0].toString()} />
+      </ListItemButton>
+    </ListItem>
+  ))
   return (
-    <form>
-      <Alert severity="info">
-        ckETH Inscription (login to load your balance or search any principal)
-      </Alert>
-      <TextField
-        label="Principal ID"
-        variant="outlined"
-        name="userid"
-        value={userid}
-        onChange={handleInputChange}
-        style={{ marginBottom: "10px" }}
-      />
-      <TextField
-        label="$🍌🍌🍌 Balance"
-        variant="outlined"
-        
-        value={balance}
-        style={{ marginBottom: "10px" }}
+    <>
+      <Alert sx={{mt:2}} severity="info">Inscription on ckETH</Alert>
+      <Grid container spacing={2} >
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Principal ID"
+            variant="outlined"
+            name="userid"
+            value={userid}
+            onChange={handleInputChange}
+            sx={{bgcolor: "background.paper"}}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <TextField
+            label="🍌🍌🍌 $GIG Balance"
+            variant="outlined"
+            value={balance}
 
-      />
-      <TextField
-        label="$ckEth Balance"
-        variant="outlined"
-        value={ckethBalance / ckETH_DECIMALS}
-        style={{ marginBottom: "10px" }}
-        
-      />
-      <Button
-        sx={{ mr: 1 }}
-        variant="contained"
-        color="primary"
-        type="button"
-        disabled={!userid}
-        onClick={check}
-      >
-        Check Balance
-      </Button>
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <TextField
+            label="$ckEth Balance (pay for transaction fee)"
+            variant="outlined"
+            value={ckethBalance / ckETH_DECIMALS}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Button
+            sx={{ mr: 1 }}
+            variant="contained"
+            color="primary"
+            type="button"
+            disabled={!userid}
+            onClick={() => loadWallet(userid)}
+          >
+            Check Balance
+          </Button>
 
-      {isAuthed && <Button
-        variant="contained"
-        type="button"
-        onClick={() => setOpenTransferForm(true)}
-        disabled={balance == 0 || ckethBalance == 0}
-      >
-        transfer
-      </Button>}
-
+          {isAuthed && (
+            <Button
+              variant="contained"
+              type="button"
+              onClick={() => setOpenTransferForm(true)}
+              disabled={balance == 0 || ckethBalance == 0}
+            >
+              transfer
+            </Button>
+          )}
+        </Grid>
+      </Grid>
       <Dialog
         maxWidth="md"
         fullWidth
@@ -234,6 +278,7 @@ const MyForm: React.FC = () => {
             <Grid container spacing={2}>
               <Grid item xs={16}>
                 <TextField
+                  fullWidth
                   label="Send  to Principal ID"
                   variant="outlined"
                   name="toUserid"
@@ -241,6 +286,8 @@ const MyForm: React.FC = () => {
                   onChange={handleInputChange}
                   style={{ marginRight: "10px" }}
                 />
+              </Grid>
+              <Grid item xs={16}>
                 <TextField
                   label="$GIG Amount to send"
                   variant="outlined"
@@ -252,15 +299,17 @@ const MyForm: React.FC = () => {
               </Grid>
               <Grid item xs={16}>
                 {allowance == 0 && (
-                  <Button
-                    sx={{ mr: 1 }}
-                    variant="outlined"
-                    color="primary"
-                    type="button"
-                    onClick={approve}
-                  >
-                    Approve
-                  </Button>
+                  <Tooltip title="Allow GIG ledger to make ckETH ledger transactions for you">
+                    <Button
+                      sx={{ mr: 1 }}
+                      variant="outlined"
+                      color="primary"
+                      type="button"
+                      onClick={approve}
+                    >
+                      Approve
+                    </Button>
+                  </Tooltip>
                 )}
                 <Button
                   sx={{ mr: 1 }}
@@ -275,7 +324,7 @@ const MyForm: React.FC = () => {
               </Grid>
               <Grid item xs={16}>
                 <Alert style={{ marginTop: "10px" }} severity="info">
-                  Indexer allowance : {allowance/ckETH_DECIMALS}
+                  Indexer allowance : {allowance / ckETH_DECIMALS}
                 </Alert>
                 {notice && <Alert severity="error">{notice}</Alert>}
               </Grid>
@@ -283,7 +332,24 @@ const MyForm: React.FC = () => {
           </form>
         </Box>
       </Dialog>
-    </form>
+
+      <List sx={{ mt: 1, width: "100%", bgcolor: "background.paper" }}>
+        <ListItem
+          key={"head"}
+          disablePadding
+          secondaryAction={
+            <ListItemButton role={undefined} dense>
+              {"balance"}
+            </ListItemButton>
+          }
+        >
+          <ListItemButton role={undefined} dense>
+            <ListItemText id={"principal"} primary={"Principal ID (100)"} />
+          </ListItemButton>
+        </ListItem>
+        {holderList}
+      </List>
+    </>
   )
 }
 
