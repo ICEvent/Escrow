@@ -1,5 +1,7 @@
 import React, { useEffect, useId, useState } from "react"
 import { TextField, Button, Alert, Grid } from "@mui/material"
+import moment from "moment"
+
 import CloseIcon from "@mui/icons-material/Close"
 import DialogTitle from "@mui/material/DialogTitle"
 import Dialog from "@mui/material/Dialog"
@@ -123,10 +125,10 @@ const MyForm: React.FC = () => {
         fee: [],
         memo: [],
         from_subaccount: [],
-        created_at_time: [],
+        created_at_time: [BigInt(moment().unix())],
         amount: BigInt(amt),
         expected_allowance: [],
-        expires_at: [],
+        expires_at: [amt == 0 ? BigInt(0) : BigInt(moment().add(1,"month").unix())],
       })
       //check allowance again
       let { allowance, expires_at } = await cketh.icrc2_allowance({
@@ -273,7 +275,7 @@ const MyForm: React.FC = () => {
           id="customized-dialog-title"
           onClose={() => setOpenTransferForm(false)}
         >
-          Transfer $GG
+          Transfer $GIG
         </BootstrapDialogTitle>
         <Box sx={{ m: 1, p: 2 }}>
           <form>
@@ -339,7 +341,7 @@ const MyForm: React.FC = () => {
               </Grid>
               <Grid item xs={16}>
                 <Alert style={{ marginTop: "10px" }} severity="info">
-                  Indexer allowance : {allowance / ckETH_DECIMALS}
+                  Allow indexer spend  {allowance / ckETH_DECIMALS} ckETH on your behalf
                 </Alert>
                 {notice && <Alert severity="error">{notice}</Alert>}
               </Grid>
