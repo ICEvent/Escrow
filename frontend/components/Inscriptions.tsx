@@ -47,6 +47,10 @@ const MyForm: React.FC = () => {
   } = useGlobalContext()
 
   useEffect(() => {
+    dump()
+  }, [])
+
+  useEffect(() => {
     if (isAuthed) {
       setUserid(principal.toString())
       loadWallet(principal.toString())
@@ -105,7 +109,7 @@ const MyForm: React.FC = () => {
   //   setLoading(false)
   // };
 
-  async function approve() {
+  async function approve(amt) {
     setNotice(null)
     setLoading(true)
     try {
@@ -120,7 +124,7 @@ const MyForm: React.FC = () => {
         memo: [],
         from_subaccount: [],
         created_at_time: [],
-        amount: BigInt(ckethBalance),
+        amount: BigInt(amt),
         expected_allowance: [],
         expires_at: [],
       })
@@ -161,11 +165,9 @@ const MyForm: React.FC = () => {
     setLoading(false)
   }
 
-  async function dump() {
-    setLoading(true)
-    let exp = await indexer.export(userid ? [Principal.fromText(userid)] : [])
+  async function dump() {    
+    let exp = await indexer.export(userid ? [Principal.fromText(userid)] : []);
     setHolders(exp)
-    setLoading(false)
   }
 
   function BootstrapDialogTitle(props: DialogTitleProps) {
@@ -305,9 +307,22 @@ const MyForm: React.FC = () => {
                       variant="outlined"
                       color="primary"
                       type="button"
-                      onClick={approve}
+                      onClick={()=>approve(ckethBalance)}
                     >
                       Approve
+                    </Button>
+                  </Tooltip>
+                )}
+                {allowance > 0 && (
+                  <Tooltip title="Revoke allowance from indexer as spender">
+                    <Button
+                      sx={{ mr: 1 }}
+                      variant="outlined"
+                      color="primary"
+                      type="button"
+                      onClick={()=>approve(0)}
+                    >
+                      Revoke
                     </Button>
                   </Tooltip>
                 )}
