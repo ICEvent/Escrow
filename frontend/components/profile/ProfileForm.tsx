@@ -17,7 +17,7 @@ import Link from '@mui/material/Link';
 import Container from '@mui/material/Container';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
-import { useOneblock } from "../Store";
+import { useOneblock, useGlobalContext } from "../Store";
 
 
 interface State {
@@ -33,7 +33,7 @@ const ProfileForm = (props) => {
 
 
   const oneblock = useOneblock();
-
+  const { state:{ principal}} = useGlobalContext();
 
   const [links, setLinks] = useState([])
   const [progress, setProgress] = useState(false);
@@ -132,6 +132,7 @@ const ProfileForm = (props) => {
   return (
 
     <Container>
+
       {values.pfp &&
         <Card variant="outlined" >
 
@@ -145,6 +146,16 @@ const ProfileForm = (props) => {
 
 
       <Box>
+        <TextField
+          label="Your principal id"
+          required
+          fullWidth
+          sx={{ m: 1 }}
+          value={principal?principal.toString():""}
+          
+          disabled={true}
+          
+        />
         <TextField
           label="id(4 charactors or more)"
           required

@@ -7,7 +7,7 @@ import { useEffect } from "react"
 import { HttpAgent, Identity } from "@dfinity/agent";
 import { AuthClient } from "@dfinity/auth-client";
 import { HOST } from "../lib/canisters";
-import { ONE_WEEK_NS, IDENTITY_PROVIDER, MENU_ORDERS, MENU_PROFILE, MENU_HOME } from "../lib/constants";
+import { ONE_WEEK_NS, MENU_ORDERS, MENU_PROFILE, MENU_HOME } from "../lib/constants";
 
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -29,11 +29,14 @@ import Person from '@mui/icons-material/Person';
 
 import { useOneblock, useSetAgent, useGlobalContext, useEscrow, useLoading, useMenu } from "../components/Store";
 
+import LoginButton from "../components/LoginButton";
+
 const Header: FC = () => {
 
   const oneblock = useOneblock();
   const escrow = useEscrow();
   const setAgent = useSetAgent();
+
   const navigate = useNavigate();
   const { menu, setMenu } = useMenu()
   const { state: { isAuthed, principal } } = useGlobalContext();
@@ -87,6 +90,7 @@ const Header: FC = () => {
   const handleAuthenticated = async (authClient: AuthClient) => {
 
     const identity: Identity = authClient.getIdentity();
+
     setAgent({
       agent: new HttpAgent({
         identity,
@@ -98,14 +102,7 @@ const Header: FC = () => {
 
   };
 
-  const login = async () => {
-    authClient.login({
-      identityProvider: IDENTITY_PROVIDER,
-      maxTimeToLive: ONE_WEEK_NS,
-      onSuccess: () => handleAuthenticated(authClient),
-    });
-  };
-
+ 
   const logout = async () => {
     handleClose();
     await authClient.logout();
@@ -129,13 +126,13 @@ const Header: FC = () => {
 
           </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} onClick={() => setMenu(MENU_HOME)}>
-            BlockList
+            BlockList 
           </Typography>
 
           {isAuthed && <Button color="inherit" onClick={handleClick}>
             <Person />
           </Button>}
-          {!isAuthed && <Button color="inherit" onClick={login}>Login</Button>}
+          {!isAuthed && <LoginButton />}
           {/* {principal && <Tooltip title={principal.toString()}><Button color="inherit" onClick={logout}>{principal.toString().slice(0, 5) + "..." + principal.toString().slice(-5)}</Button></Tooltip>} */}
 
         </Toolbar>

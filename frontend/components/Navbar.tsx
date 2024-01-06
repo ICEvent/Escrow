@@ -5,7 +5,7 @@ import { HttpAgent, Identity } from "@dfinity/agent";
 
 
 import { HOST } from "../lib/canisters";
-import { ONE_WEEK_NS, IDENTITY_PROVIDER } from "../lib/constants";
+import { ONE_WEEK_NS, IDENTITY_PROVIDER_IC } from "../lib/constants";
 
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -22,6 +22,7 @@ import { Profile } from "../api/profile/profile.did";
 import OrderList from "./orders/OrderList";
 import DarkModeToggle from "../header/DarkModeToggle";
 
+import LoginButton from "./LoginButton";
 
 export default () => {
 
@@ -76,7 +77,8 @@ export default () => {
 
   const login = async () => {
     authClient.login({
-      identityProvider: IDENTITY_PROVIDER,
+      derivationOrigin: "https://znisf-eqaaa-aaaaj-aabta-cai.raw.ic0.app",
+      identityProvider: IDENTITY_PROVIDER_IC,
       maxTimeToLive: ONE_WEEK_NS,
       onSuccess: () => handleAuthenticated(authClient),
     });
@@ -116,7 +118,7 @@ export default () => {
           ICEscrow
         </Typography>
         {isAuthed && <Button color="inherit" onClick={() => setOpenProfile(true)}>Profile</Button>}
-        {!isAuthed && <Button color="inherit" onClick={login}>Login</Button>}
+        {!isAuthed && <LoginButton />}
         {principal && <Tooltip title={principal.toString()}><Button color="inherit" onClick={logout}>{principal.toString().slice(0, 5) + "..." + principal.toString().slice(-5)}</Button></Tooltip>}
         <DarkModeToggle />
       </Toolbar>

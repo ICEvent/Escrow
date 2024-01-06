@@ -20,7 +20,42 @@ import Header from './header';
 import { Profile } from "./pages/Profile"
 import { Home } from "./pages/Home";
 import Item from "./pages/Item";
-
+declare global {
+  interface Window {
+    ic: {
+      plug: {
+        agent: any;
+        isConnected: () => Promise<boolean>;
+        createAgent: (args?: {
+          whitelist: string[];
+          host?: string;
+        }) => Promise<undefined>;
+        requestBalance: () => Promise<
+          Array<{
+            amount: number;
+            canisterId: string | null;
+            image: string;
+            name: string;
+            symbol: string;
+            value: number | null;
+          }>
+        >;
+        requestTransfer: (arg: {
+          to: string;
+          amount: number;
+          opts?: {
+            fee?: number;
+            memo?: number;
+            from_subaccount?: number;
+            created_at_time?: {
+              timestamp_nanos: number;
+            };
+          };
+        }) => Promise<{ height: number }>;
+      };
+    };
+  }
+}
 
 export default () => {
 
@@ -37,6 +72,8 @@ export default () => {
     color: ${({ theme: { palette } }) => palette.primary.main};
   }
 `
+
+
   return (
     <BrowserRouter>
       <Store>
