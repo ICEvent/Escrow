@@ -1,0 +1,19 @@
+type Op = 
+ variant {
+   burn: record {amount: nat64;};
+   mint;
+   transfer: record {
+               amount: nat64;
+               to: principal;
+             };
+ };
+service : {
+  balance_of: (principal) -> (nat64) query;
+  export: (opt principal) -> (vec record {
+                                    principal;
+                                    nat64;
+                                  });
+  getlog: () -> (vec text) query;
+  op: (Op) -> ();
+  stats: () -> (nat, nat, nat) query;
+}
