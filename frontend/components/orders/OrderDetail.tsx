@@ -48,7 +48,7 @@ export default (props) => {
         status == ORDER_STATUS_DEPOSITED ? 2 :
             status == ORDER_STATUS_DELIVERED ? 3 :
                 status == ORDER_STATUS_RECEIVED ? 4 :
-                    status == ORDER_STATUS_CLOSED ? 5 : 1;
+                   ( status == ORDER_STATUS_RELEASED || status == ORDER_STATUS_CLOSED) ? 5 : 1;
 
     const { setLoading } = useLoading();
     const [confirmed, setConfirmed] = React.useState(false)
@@ -232,7 +232,7 @@ export default (props) => {
                             {status == ORDER_STATUS_DEPOSITED && principal.toString() == order.seller.toString() &&<Alert severity="info">Have you deliver {order.memo} to buyer? </Alert>}
                             {status == ORDER_STATUS_DEPOSITED && principal.toString() == order.buyer.toString() &&<Alert severity="info">Before the following steps, please wait for seller to deliver {order.memo} to you.</Alert>}
                             {status == ORDER_STATUS_DELIVERED && principal.toString() == order.buyer.toString() &&<Alert severity="info">Are you sure you receive {order.memo} from seller? Once you change order status, the fund will be released to seller and can't be refunded.</Alert>}
-                            {status == ORDER_STATUS_RECEIVED && principal.toString() == order.seller.toString() &&<Alert severity="info">Now you can request to fund release.</Alert>}
+                            {status == ORDER_STATUS_RECEIVED && principal.toString() == order.seller.toString() &&<Alert severity="info">Now you can request to fund release, note: transaction fee will be applied.</Alert>}
                             {(status == ORDER_STATUS_NEW  ||
                             status == ORDER_STATUS_DEPOSITED && principal.toString() == order.seller.toString()||
                             status == ORDER_STATUS_DELIVERED && principal.toString() == order.buyer.toString()

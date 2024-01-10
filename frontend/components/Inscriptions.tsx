@@ -69,7 +69,6 @@ const MyForm: React.FC = () => {
       setUserid(principal.toString())
       loadWallet(principal.toString())
     }
-    dump()
   }, [principal])
 
   async function loadWallet(uid: string) {
@@ -195,19 +194,20 @@ const MyForm: React.FC = () => {
       setLoading(true)
       escrow
         .listItem({
-          name: "APE20",
-          description: "",
+          name: "$GIG",
+          description: "selling "+sellAmmount+ " GIG",
           image: "",
           itype: { coin: null },
-          price: BigInt(parseFloat(price) * LEDGER_E8S),
+          price: BigInt(parseFloat(price) * sellAmmount * LEDGER_E8S),
           currency: { ICP: null },
           status: { list: null },
         })
         .then((res) => {
-          setOpenListForm(false)
+          
           setLoading(false)
           if (res["ok"]) {
             toast.success("your order has created!")
+            setOpenListForm(false)
           } else {
             toast.error(res["err"].toString())
           }
@@ -437,7 +437,7 @@ const MyForm: React.FC = () => {
               </Grid>
               <Grid item xs={4}>
                 <TextField
-                  label="Price(ICP)"
+                  label="$ICP/GIG"
                   variant="outlined"
                   name="price"
                   value={price}

@@ -24,7 +24,6 @@ import Time "mo:base/Time";
 import Trie "mo:base/Trie";
 import TrieMap "mo:base/TrieMap";
 
-
 import CRC32 "CRC32";
 import SHA224 "SHA224";
 import Account "./account";
@@ -45,7 +44,7 @@ actor class EscrowService() = this {
 
     type Order = Types.Order;
     type NewOrder = Types.NewOrder;
-    // type NewSellOrder = Types.NewSellOrder;
+    type NewSellOrder = Types.NewSellOrder;
     type Log = Types.Log;
     type Comment = Types.Comment;
 
@@ -100,12 +99,12 @@ actor class EscrowService() = this {
 
         if (Principal.isAnonymous(caller)) {
 
-            #err("no authenticated");
-        }else if(newOrder.memo == ""){
+            #err("no authenticated")
+        } else if (newOrder.memo == "") {
             #err("memo is required")
-        } else if(newOrder.amount == 0) {
+        } else if (newOrder.amount == 0) {
             #err("your order amount must be greater than 0")
-        }else{
+        } else {
             let orderid = nextOrderId;
 
             orders.put(
@@ -139,60 +138,60 @@ actor class EscrowService() = this {
         };
 
     };
-//  public shared ({ caller }) func sell(newOrder : NewSellOrder) : async Result.Result<Nat, Text> {
+    public shared ({ caller }) func sell(newOrder : NewSellOrder) : async Result.Result<Nat, Text> {
 
-//         if (Principal.isAnonymous(caller)) {
+        if (Principal.isAnonymous(caller)) {
 
-//             #err("no authenticated");
-//         }else if(newOrder.memo == ""){
-//             #err("memo is required")
-//         } else if(newOrder.amount == 0) {
-//             #err("your order amount must be greater than 0")
-//         }else{
-//             let orderid = nextOrderId;
+            #err("no authenticated")
+        } else if (newOrder.memo == "") {
+            #err("memo is required")
+        } else if (newOrder.amount == 0) {
+            #err("your order amount must be greater than 0")
+        } else {
+            let orderid = nextOrderId;
 
-//             orders.put(
-//                 orderid,
-//                 {
-//                     id = orderid;
-//                     buyer = newOrder.buyer;
-//                     seller = caller;
-//                     memo = newOrder.memo;
-//                     amount = newOrder.amount;
-//                     currency = newOrder.currency;
-//                     account = getNewAccountId();
-//                     blockin = 0;
-//                     blockout = 0;
-//                     status = #new;
-//                     expiration = newOrder.expiration;
-//                     createtime = Time.now();
-//                     updatetime = Time.now();
-//                     lockedby = caller;
-//                     comments = [];
-//                     logs = [{
-//                         ltime = Time.now();
-//                         log = "create selling order";
-//                         logger = #buyer
-//                     }]
-//                 },
-//             );
+            orders.put(
+                orderid,
+                {
+                    id = orderid;
+                    buyer = newOrder.buyer;
+                    seller = caller;
+                    memo = newOrder.memo;
+                    amount = newOrder.amount;
+                    currency = newOrder.currency;
+                    account = getNewAccountId();
+                    blockin = 0;
+                    blockout = 0;
+                    status = #new;
+                    expiration = newOrder.expiration;
+                    createtime = Time.now();
+                    updatetime = Time.now();
+                    lockedby = caller;
+                    comments = [];
+                    logs = [{
+                        ltime = Time.now();
+                        log = "create selling order";
+                        logger = #buyer
+                    }]
+                },
+            );
 
-//             nextOrderId := nextOrderId +1;
-//             #ok(orderid)
-//         };
+            nextOrderId := nextOrderId +1;
+            #ok(orderid)
+        };
 
-//     };
+    };
     //buyer create a new order
     public shared ({ caller }) func create(newOrder : NewOrder) : async Result.Result<Nat, Text> {
 
         if (Principal.isAnonymous(caller)) {
 
-            #err("no authenticated");
-        }else if(newOrder.memo == ""){
+            #err("no authenticated")
+        } else if (newOrder.memo == "") {
             #err("memo is required")
-        } else if(newOrder.amount == 0) {
+        } else if (newOrder.amount == 0) {
             #err("your order amount must be greater than 0")
-        }else{
+        } else {
             let orderid = nextOrderId;
 
             orders.put(
@@ -231,9 +230,7 @@ actor class EscrowService() = this {
 
         let order = Array.find<Order>(
             Iter.toArray(orders.vals()),
-            func(o : Order) : Bool {
-                (o.id == orderid)
-            },
+            func(o : Order) : Bool { (o.id == orderid) },
         );
 
         switch (order) {
@@ -308,9 +305,7 @@ actor class EscrowService() = this {
         //update status with delivered
         let order = Array.find<Order>(
             Iter.toArray(orders.vals()),
-            func(o : Order) : Bool {
-                (o.id == orderid)
-            },
+            func(o : Order) : Bool { (o.id == orderid) },
         );
         //and (o.buyer == caller or o.seller == caller) and (o.status == #new or o.status == #deposited or o.status == #delivered)
         //only seller and deposited order can changed to deliver
@@ -365,9 +360,7 @@ actor class EscrowService() = this {
 
         let order = Array.find<Order>(
             Iter.toArray(orders.vals()),
-            func(o : Order) : Bool {
-                (o.id == orderid)
-            },
+            func(o : Order) : Bool { (o.id == orderid) },
         );
 
         switch (order) {
@@ -419,9 +412,7 @@ actor class EscrowService() = this {
 
         let order = Array.find<Order>(
             Iter.toArray(orders.vals()),
-            func(o : Order) : Bool {
-                (o.id == orderid)
-            },
+            func(o : Order) : Bool { (o.id == orderid) },
         );
 
         switch (order) {
@@ -440,7 +431,7 @@ actor class EscrowService() = this {
 
                     if (order.currency == #ICP) {
                         //NO CHARGE FOR ICET
-                        amount := amount - FEE - ESCROW_FEE
+                        amount := amount - ESCROW_FEE
                     };
 
                     let trans = await transfer({
@@ -583,7 +574,7 @@ actor class EscrowService() = this {
                         //refund
                         if (order.currency == #ICP) {
                             //NO CHARGE FOR ICET
-                            balance := balance - FEE - ESCROW_FEE
+                            balance := balance - ESCROW_FEE
                         };
 
                         let r = await transfer({
@@ -664,15 +655,13 @@ actor class EscrowService() = this {
 
         let order = Array.find<Order>(
             Iter.toArray(orders.vals()),
-            func(o : Order) : Bool {
-                (o.id == orderid)
-            },
+            func(o : Order) : Bool { (o.id == orderid) },
         );
 
         switch (order) {
             case (?order) {
                 if (
-                    order.seller == caller or order.buyer == caller and (order.status == #new or order.status == #canceled),
+                    order.seller == caller or order.buyer == caller and (order.status == #new or order.status == #canceled)
                 ) {
 
                     var balance : Nat64 = 0;
@@ -812,9 +801,7 @@ actor class EscrowService() = this {
     public shared ({ caller }) func getAllOrders(page : Nat) : async [Order] {
         let os = Array.filter(
             Iter.toArray(orders.vals()),
-            func(o : Order) : Bool {
-                (o.buyer == caller or o.seller == caller)
-            },
+            func(o : Order) : Bool { (o.buyer == caller or o.seller == caller) },
         );
 
         Page.getArrayPage(os, page, default_page_size);
@@ -1008,7 +995,7 @@ actor class EscrowService() = this {
         Page.getArrayPage(titems, page, default_page_size)
     };
 
-    public query func getItem(id: Nat): async ?ItemTypes.Item{
+    public query func getItem(id : Nat) : async ?ItemTypes.Item {
         items.retrieve(id)
     };
     // public shared ({ caller }) func lockItem(id : Nat) : async Result.Result<Nat, Text> {
@@ -1070,7 +1057,6 @@ actor class EscrowService() = this {
 
     };
 
-
     /**
     system
     **/
@@ -1083,14 +1069,14 @@ actor class EscrowService() = this {
 
     system func postupgrade() {
         _upgradeItems := [];
-       
+
     };
 
-    public query func getBackupItems(): async [UpgradeTypes.U_Item]{
+    public query func getBackupItems() : async [UpgradeTypes.U_Item] {
         backupItems
     };
 
-    public query func getItemsSize(): async Nat{
+    public query func getItemsSize() : async Nat {
         _upgradeItems.size()
     };
 

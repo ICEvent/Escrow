@@ -30,16 +30,31 @@ export default () => {
     const escrow = useEscrow();
     const [orders, setOrders] = React.useState([])
     const [loading, setLoading]= React.useState(false)
+    const [page, setPage] = React.useState(1)
 
     const [openOrderForm, setOpenOrderForm] = React.useState(false);
 
     React.useEffect(() => {
+        loadProcessingOrders();
+    }, []);
+
+    function loadProcessingOrders(){
         setLoading(true)
         escrow.getOrders().then(os => {
             setOrders(os)
             setLoading(false)
         })
-    }, []);
+    };
+    
+    function loadAllOrders(){
+        setLoading(true)
+        escrow.getAllOrders(BigInt(page)).then(os => {
+            console.log(os)
+            setOrders(os)
+            setPage(page+1)
+            setLoading(false)
+        })
+    };
 
     function buy(newOrder: NewOrder){
         try{
@@ -109,6 +124,7 @@ export default () => {
     return (
         <>
         <Button variant='contained' onClick={()=>setOpenOrderForm(true)}>Create An Order</Button>
+        <Button variant='contained' onClick={loadAllOrders}>All Orders ({page})</Button>
             {!loading && <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
