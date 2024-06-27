@@ -44,7 +44,7 @@ export default () => {
   const [openListForm, setOpenListForm] = React.useState(false)
   const [openOrderForm, setOpenOrderForm] = React.useState(false)
 
-  const [itemType, setItemType] = React.useState(LIST_ITEM_INSCRIPTION)
+  const [itemType, setItemType] = React.useState(LIST_ITEM_NFT)
   const [offers, setOffers] = React.useState<Item[]>([])
 
   React.useEffect(() => {
@@ -181,12 +181,7 @@ export default () => {
         // alignItems="center"
         spacing={2}
       >
-        <Button
-          variant={itemType == LIST_ITEM_INSCRIPTION ? "outlined" : "text"}
-          onClick={() => setItemType(LIST_ITEM_INSCRIPTION)}
-        >
-          APE20($GIG)
-        </Button>
+  
         <Button
           variant={itemType == LIST_ITEM_NFT ? "outlined" : "text"}
           onClick={() => setItemType(LIST_ITEM_NFT)}
@@ -222,7 +217,7 @@ export default () => {
       <Box sx={{
                 '& .MuiTextField-root': {mt:2, mb: 1, width: '100%' }
             }}>
-        {itemType == LIST_ITEM_INSCRIPTION && <Inscriptions />}
+    
         {(itemType == LIST_ITEM_NFT || itemType == LIST_ITEM_MERCHANDISE) && (
           <Grid container spacing={2} direction="row">
             {ol}
