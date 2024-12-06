@@ -29,7 +29,7 @@ import { toast } from 'react-toastify';
 import moment from 'moment';
 import { CURRENCY_ICET, CURRENCY_ICP, LEDGER_E6S, LEDGER_E8S, ORDER_DEFAULT_EXPIRED_DAYS } from '../lib/constants';
 import OfferDetail from '../components/offers/OfferDetail';
-import { Item } from 'frontend/api/escrow/escrow.did';
+import { Item } from 'frontend/api/escrow/service.did';
 import { Container } from '@mui/system';
 
 

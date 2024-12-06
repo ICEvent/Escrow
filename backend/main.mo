@@ -133,7 +133,7 @@ actor class EscrowService() = this {
                 },
             );
 
-            nextOrderId := nextOrderId +1;
+            nextOrderId := nextOrderId + 1;
             #ok(orderid)
         };
 
@@ -176,7 +176,7 @@ actor class EscrowService() = this {
                 },
             );
 
-            nextOrderId := nextOrderId +1;
+            nextOrderId := nextOrderId + 1;
             #ok(orderid)
         };
 
@@ -220,7 +220,7 @@ actor class EscrowService() = this {
                 },
             );
 
-            nextOrderId := nextOrderId +1;
+            nextOrderId := nextOrderId + 1;
             #ok(orderid)
         };
 
@@ -990,6 +990,11 @@ actor class EscrowService() = this {
         Page.getArrayPage(titems, page, default_page_size)
     };
 
+    public query func getItems(page : Nat) : async [ItemTypes.Item] {
+        let titems = items.getItems();
+        Page.getArrayPage(titems, page, default_page_size)
+    };
+    
     public query ({ caller }) func getMyItems(page : Nat) : async [ItemTypes.Item] {
         let titems = items.getUserItems(caller);
         Page.getArrayPage(titems, page, default_page_size)

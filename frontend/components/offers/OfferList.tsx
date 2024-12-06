@@ -13,11 +13,13 @@ import CircularProgress from "@mui/material/CircularProgress"
 import IconButton from "@mui/material/IconButton"
 import AddIcon from '@mui/icons-material/Add';
 import { useEscrow, useLoading, useGlobalContext } from "../Store"
+import ItemList from "../items/ItemList";
+import { Tabs, Tab } from '@mui/material';
 
 import Inscriptions from "../Inscriptions"
 
-import { Itype, NewOrder, NewSellOrder } from "../../api/escrow/escrow.did"
-import { Item } from "../../api/escrow/escrow.did"
+import { Itype, NewOrder, NewSellOrder } from "../../api/escrow/service.did"
+import { Item } from "../../api/escrow/service.did"
 import {
   LIST_ITEM_NFT,
   LIST_ITEM_COIN,
@@ -46,14 +48,14 @@ export default () => {
 
   const [itemType, setItemType] = React.useState(LIST_ITEM_NFT)
   const [offers, setOffers] = React.useState<Item[]>([])
+  const [tabValue, setTabValue] = React.useState(0);
 
   React.useEffect(() => {
-    if (itemType == LIST_ITEM_INSCRIPTION) {
-        setOffers([])
-    } else {
-      loadOffers()
-    }
-  }, [itemType])
+
+    loadOffers()
+
+  }, [])
+
 
   const saveList = (data) => {
     setOpenListForm(false)
@@ -70,26 +72,8 @@ export default () => {
     })
   }
   const loadOffers = () => {
-    let sitype: Itype = { nft: null }
-    switch (itemType) {
-      case LIST_ITEM_NFT:
-        sitype = { nft: null }
-        break
-      case LIST_ITEM_COIN:
-        sitype = { coin: null }
-        break
-      case LIST_ITEM_MERCHANDISE:
-        sitype = { merchandise: null }
-        break
-      case LIST_ITEM_SERVICE:
-        sitype = { service: null }
-        break
-      case LIST_ITEM_OTHER:
-        sitype = { other: null }
-        break
-    }
     setLoading(true)
-    escrow.searchItems(sitype, BigInt(1)).then((res) => {
+    escrow.getItems(BigInt(1)).then((res) => {
       console.log(res)
       setLoading(false)
       setOffers(res)
@@ -152,18 +136,12 @@ export default () => {
       </DialogTitle>
     )
   }
-  const ol = offers.map((o) =>
-    itemType == LIST_ITEM_NFT || itemType == LIST_ITEM_MERCHANDISE ? (
-      <OfferCard key={o.id} offer={o} />
-    ) : (
-      <OfferItem key={o.id} offer={o} />
-    ),
-  )
+
 
   return (
     <React.Fragment>
       {isAuthed && (
-        <Button  sx={{ mr: 1, mbb: 1 }} variant="contained" onClick={() => setOpenListForm(true)} startIcon={<AddIcon />}>
+        <Button sx={{ mr: 1, mbb: 1 }} variant="contained" onClick={() => setOpenListForm(true)} startIcon={<AddIcon />}>
           List My Item
         </Button>
       )}
@@ -174,61 +152,8 @@ export default () => {
       )}
       <Divider />
 
-      <Stack
-        direction="row"
-        sx={{ mt: 2 }}
-        // justifyContent="center"
-        // alignItems="center"
-        spacing={2}
-      >
-  
-        <Button
-          variant={itemType == LIST_ITEM_NFT ? "outlined" : "text"}
-          onClick={() => setItemType(LIST_ITEM_NFT)}
-        >
-          NFTs
-        </Button>
-        <Button
-          variant={itemType == LIST_ITEM_COIN ? "outlined" : "text"}
-          onClick={() => setItemType(LIST_ITEM_COIN)}
-        >
-          Crypto Currencies
-        </Button>
-        <Button
-          variant={itemType == LIST_ITEM_SERVICE ? "outlined" : "text"}
-          onClick={() => setItemType(LIST_ITEM_SERVICE)}
-        >
-          Services
-        </Button>
-        <Button
-          variant={itemType == LIST_ITEM_MERCHANDISE ? "outlined" : "text"}
-          onClick={() => setItemType(LIST_ITEM_MERCHANDISE)}
-        >
-          Merchandises
-        </Button>
-        <Button
-          variant={itemType == LIST_ITEM_OTHER ? "outlined" : "text"}
-          onClick={() => setItemType(LIST_ITEM_OTHER)}
-        >
-          Others
-        </Button>
-      </Stack>
+      <ItemList items={offers} />
 
-      <Box sx={{
-                '& .MuiTextField-root': {mt:2, mb: 1, width: '100%' }
-            }}>
-    
-        {(itemType == LIST_ITEM_NFT || itemType == LIST_ITEM_MERCHANDISE) && (
-          <Grid container spacing={2} direction="row">
-            {ol}
-          </Grid>
-        )}
-        {itemType != LIST_ITEM_NFT && itemType != LIST_ITEM_MERCHANDISE && (
-          <Box>
-            <List>{ol}</List>
-          </Box>
-        )}
-      </Box>
       <Dialog
         maxWidth="md"
         fullWidth

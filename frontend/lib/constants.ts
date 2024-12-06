@@ -45,6 +45,7 @@ export const LISTITEM_STATUS_UNLIST = "unlist";
 export const CURRENCY_ICP = "ICP";
 export const CURRENCY_ICET = "ICET";
 
+export const LIST_ITEM_ALL = "all";
 export const LIST_ITEM_INSCRIPTION = "inscription";
 export const LIST_ITEM_NFT = "nft";
 export const LIST_ITEM_COIN = "coin";

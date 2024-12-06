@@ -139,6 +139,7 @@ export const idlFactory = ({ IDL }) => {
     'getBackupItems' : IDL.Func([], [IDL.Vec(U_Item)], ['query']),
     'getBalanceBySub' : IDL.Func([IDL.Nat, Currency__1], [Balance], []),
     'getItem' : IDL.Func([IDL.Nat], [IDL.Opt(Item)], ['query']),
+    'getItems' : IDL.Func([IDL.Nat], [IDL.Vec(Item)], ['query']),
     'getItemsSize' : IDL.Func([], [IDL.Nat], ['query']),
     'getMyAccountId' : IDL.Func([IDL.Nat], [IDL.Text], ['query']),
     'getMyBalanceBySub' : IDL.Func([IDL.Nat, Currency__1], [Balance], []),

@@ -8,7 +8,7 @@ import { defaultAgent } from "../lib/canisters"
 import ONEBLOCKService from "../api/profile/profile.did"
 import * as ONEBLOCK from "../api/profile/index"
 
-import ESCROWService from "../api/escrow/escrow.did"
+import ESCROWService from "../api/escrow/service.did"
 import * as ESCROW from "../api/escrow/index"
 
 import INDEXERService from "../api/indexer/indexer.did";
