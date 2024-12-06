@@ -1,4 +1,4 @@
-import { NewOrder } from "../../api/escrow/escrow.did";
+import { NewOrder } from "../../api/escrow/service.did";
 
 import { useEscrow } from "../../components/Store";
 

@@ -11,7 +11,7 @@ import TextField from '@mui/material/TextField';
 import { Button, Grid } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
-import { Comment } from '../../api/escrow/escrow.did';
+import { Comment } from '../../api/escrow/service.did';
 import moment from 'moment';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 

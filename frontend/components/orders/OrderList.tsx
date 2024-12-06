@@ -18,7 +18,7 @@ import { toast } from 'react-toastify';
 import { useEscrow } from '../Store';
 import OrderListItem from './OrderListItem';
 import OrderForm from './OrderForm';
-import { NewOrder, NewSellOrder } from '../../api/escrow/escrow.did';
+import { NewOrder, NewSellOrder } from '../../api/escrow/service.did';
 
 export interface DialogTitleProps {
     id: string;
