@@ -4,7 +4,9 @@ import Grid from "@mui/material/Grid"
 import DialogTitle from "@mui/material/DialogTitle"
 import Dialog from "@mui/material/Dialog"
 import OfferCard from "./OfferCard"
-import { Button, DialogContent, Divider, List, Stack } from "@mui/material"
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore"
+import { Button, DialogContent, Divider, List, Typography } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import ListItemForm from "./ListItemForm"
 import { toast } from "react-toastify"
@@ -49,12 +51,14 @@ export default () => {
   const [itemType, setItemType] = React.useState(LIST_ITEM_NFT)
   const [offers, setOffers] = React.useState<Item[]>([])
   const [tabValue, setTabValue] = React.useState(0);
+  const [page, setPage] = React.useState(1);
+  const [itemsPerPage] = React.useState(10); 
 
   React.useEffect(() => {
 
     loadOffers()
 
-  }, [])
+  }, [page])
 
 
   const saveList = (data) => {
@@ -73,8 +77,8 @@ export default () => {
   }
   const loadOffers = () => {
     setLoading(true)
-    escrow.getItems(BigInt(1)).then((res) => {
-      console.log(res)
+    escrow.getItems(BigInt(page)).then((res) => {
+      
       setLoading(false)
       setOffers(res)
     })
@@ -153,7 +157,24 @@ export default () => {
       <Divider />
 
       <ItemList items={offers} />
-
+<Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+    <Button 
+      onClick={() => setPage(p => p - 1)}
+      disabled={page === 1}
+      startIcon={<NavigateBeforeIcon />}
+    >
+      Previous
+    </Button>
+    <Typography sx={{ mx: 2, alignSelf: 'center' }}>
+      Page {page} 
+    </Typography>
+    <Button
+      onClick={() => setPage(p => p + 1)}
+      endIcon={<NavigateNextIcon />}
+    >
+      Next  
+    </Button>
+  </Box>
       <Dialog
         maxWidth="md"
         fullWidth

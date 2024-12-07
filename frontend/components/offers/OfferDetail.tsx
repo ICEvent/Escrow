@@ -6,6 +6,7 @@ import CardMedia from '@mui/material/CardMedia';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import { Button, Chip } from '@mui/material';
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -16,11 +17,9 @@ import Alert from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import FilterListOffIcon from '@mui/icons-material/FilterListOff';
-import { Principal } from "@dfinity/principal";
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
+
+import CloseIcon from '@mui/icons-material/Close';
+
 import { useGlobalContext, useEscrow } from '../Store';
 import OfferList from './OfferList';
 import { toast } from 'react-toastify';
@@ -61,17 +60,17 @@ export default (props) => {
                 } else {
                     toast.error(res["err"] ? res["err"] : "check console log for error message")
                 };
-                props.close ? props.close(): null;
+                props.close ? props.close() : null;
             });
         }
     };
 
     const unlist = () => {
         setLoading(true)
-        escrow.changeItemStatus(props.offer.id, {"sold": null}).then(res=>{
-            if(res["ok"]){
-                toast.success("unlist this item")                
-            }else{
+        escrow.changeItemStatus(props.offer.id, { "sold": null }).then(res => {
+            if (res["ok"]) {
+                toast.success("unlist this item")
+            } else {
                 toast.error(res["err"])
             };
             setLoading(false)
@@ -80,49 +79,99 @@ export default (props) => {
     };
 
     return (
+        <Card elevation={0}>
+            <IconButton
+                onClick={(e) => {
+                    e.stopPropagation();
+                    props.close?.();
+                  }}
+                sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: 8,
+                    zIndex: 1
+                }}
+            >
+                <CloseIcon />
+            </IconButton>
 
-        <Grid item xs={12}>
-          
-            <Card>
-                <CardHeader
+            <CardHeader
 
-                    title={props.offer.name}
-                    subheader={"$" + currency + " " + price}
-                />
-                {props.offer.image &&<CardMedia
+                title={props.offer.name}
+                subheader={
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="subtitle1">
+                            ${currency} {price}
+                        </Typography>
+                        <Chip
+                            label={Object.getOwnPropertyNames(props.offer.itype)[0]}
+                            color="primary"
+                            size="small"
+                            variant="outlined"
+                        />
+                    </Box>
+                }
+            />
+            {props.offer.image && (
+                <CardMedia
                     component="img"
-                    height="194"
+                    sx={{
+                        height: 300,
+                        objectFit: 'contain',
+                        bgcolor: 'grey.100',
+                        borderRadius: 1
+                    }}
                     image={props.offer.image}
-                    alt="Paella dish"
-                />}
-                <CardContent>
-                    <Typography variant="body2" color="text.secondary">
+                    alt={props.offer.name}
+                />
+            )}
+            <CardContent>
+
+
+                <Box sx={{ mb: 2 }}>
+
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
                         {props.offer.description}
                     </Typography>
-                </CardContent>
-                <CardActions disableSpacing>
-                    {loading && <Box sx={{ display: 'flex' }}>
-                        <CircularProgress />
-                    </Box>}
-                    {!loading && <IconButton disabled={loading || !isAuthed} onClick={buyit} edge="end" aria-label="comments">
-                        <ShoppingCartIcon />
-                    </IconButton>}
+                    <Typography variant="caption" display="block">
+                        Listed on: {moment.unix(Number(props.offer.listime) / 1000000000).format('MMMM DD, YYYY')}
+                    </Typography>
+                    <Typography variant="caption" display="block">
+                        Owner: {props.offer.owner.toString()}
+                    </Typography>
+                </Box>
 
-                    {principal && props.offer.owner.toString() == principal.toString() &&
-                        <Tooltip title="unlist item"><IconButton onClick={unlist}>
-                            <FilterListOffIcon />
-                        </IconButton></Tooltip>
-                    }
-                    <Tooltip title={props.offer.owner.toString()}>
-                        <IconButton>
-                            <PersonIcon />
-                        </IconButton>
-                    </Tooltip>
+            </CardContent>
 
-                </CardActions>
-               
-            </Card>
-          </Grid>
+            <CardActions sx={{ justifyContent: 'flex-end', gap: 1, p: 2 }}>
+                {loading ? (
+                    <CircularProgress size={24} />
+                ) : (
+                    <Button
+                        variant="contained"
+                        disabled={loading || !isAuthed}
+                        onClick={buyit}
+                        startIcon={<ShoppingCartIcon />}
+                    >
+                        Buy Now
+                    </Button>
+                )}
+
+                {principal && props.offer.owner.toString() === principal.toString() && (
+                    <Button
+                        variant="outlined"
+                        color="error"
+                        onClick={unlist}
+                        startIcon={<FilterListOffIcon />}
+                    >
+                        Unlist Item
+                    </Button>
+                )}
+            </CardActions>
+
+
+        </Card>
+
 
     );
 }

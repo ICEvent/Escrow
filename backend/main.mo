@@ -992,9 +992,13 @@ actor class EscrowService() = this {
 
     public query func getItems(page : Nat) : async [ItemTypes.Item] {
         let titems = items.getItems();
-        Page.getArrayPage(titems, page, default_page_size)
+        let sortedItems = Array.sort<ItemTypes.Item>(
+            titems,
+            func(a, b) { Int.compare(Int.abs(b.listime), Int.abs(a.listime)) },
+        );
+        Page.getArrayPage(sortedItems, page, default_page_size)
     };
-    
+
     public query ({ caller }) func getMyItems(page : Nat) : async [ItemTypes.Item] {
         let titems = items.getUserItems(caller);
         Page.getArrayPage(titems, page, default_page_size)

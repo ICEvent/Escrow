@@ -4,12 +4,19 @@ import Card from '@mui/material/Card';
 import CardHeader from '@mui/material/CardHeader';
 import CardMedia from '@mui/material/CardMedia';
 import CardActions from '@mui/material/CardActions';
-
+import Avatar from '@mui/material/Avatar';
+import ImageIcon from '@mui/icons-material/Image';
+import {
+    List,
+    Typography,
+    Chip,
+    Paper
+} from '@mui/material';
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import PersonIcon from '@mui/icons-material/Person';
-import { Tooltip,Dialog } from '@mui/material';
+import { Tooltip, Dialog } from '@mui/material';
 import Snackbar, { SnackbarOrigin } from '@mui/material/Snackbar';
 import Alert from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -66,10 +73,10 @@ export default (props) => {
 
     const unlist = () => {
         setLoading(true)
-        escrow.changeItemStatus(props.offer.id, {"sold": null}).then(res=>{
-            if(res["ok"]){
-                toast.success("unlist this item")                
-            }else{
+        escrow.changeItemStatus(props.offer.id, { "sold": null }).then(res => {
+            if (res["ok"]) {
+                toast.success("unlist this item")
+            } else {
                 toast.error(res["err"])
             };
             setLoading(false)
@@ -78,35 +85,63 @@ export default (props) => {
     };
 
     return (
-        // <Grid item xs={12} sm={6} md={3} >
-            <ListItem
-            key={props.offer.id}
-            secondaryAction={
-                <ListItemText>
-                    {"$" + currency + " " + price}
-                </ListItemText>
-            }
-            disablePadding
-          >
-            <ListItemButton role={undefined} onClick={()=>setOpenOfferDetail(true)}   dense>
-                <ListItemIcon>
-                {loading && <Box sx={{ display: 'flex' }}>
-                        <CircularProgress />
-                    </Box>}
-                </ListItemIcon>
-              <ListItemText id={props.offer.id} primary={props.offer.name}/>
-            </ListItemButton>
+        <ListItem
+            key={Number(props.offer.id)}
+            onClick={() => setOpenOfferDetail(true)}
+            sx={{
+                cursor: 'pointer',
+                '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
+            }}
+        >
+            {props.offer.image ? (
+                <Avatar
+                    src={props.offer.image}
+                    variant="rounded"
+                    sx={{ width: 60, height: 60, mr: 2 }}
+                />
+            ) : (
+                <Avatar
+                    variant="rounded"
+                    sx={{ width: 60, height: 60, mr: 2, bgcolor: 'grey.200' }}
+                >
+                    <ImageIcon sx={{ color: 'grey.400' }} />
+                </Avatar>
+            )}
+            <Box sx={{ width: '100%' }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                    <ListItemText
+                        primary={props.offer.name}
+                        secondary={"$" + currency + " " + price}
 
+                    />
+                    <Box display="flex" alignItems="center" gap={2}>
+                        <Chip
+                            label={Object.getOwnPropertyNames(props.offer.itype)[0]}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                        />
+                        <Typography variant="body1">
+
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                            {moment.unix(Number(props.offer.listime) / 1000000000).format('MMM DD, YYYY')}
+                        </Typography>
+                    </Box>
+                </Box>
+            </Box>
             <Dialog
                 maxWidth="md"
                 fullWidth
                 disableEscapeKeyDown={false}
                 onClose={() => setOpenOfferDetail(false)}
                 open={openOfferDetail}>
-                
-                <OfferDetail offer={props.offer} close={()=>setOpenOfferDetail(false)}/>
+
+                <OfferDetail offer={props.offer} close={() => setOpenOfferDetail(false)} />
             </Dialog>
-          </ListItem>
-          
+
+        </ListItem>
+
+
     );
 }

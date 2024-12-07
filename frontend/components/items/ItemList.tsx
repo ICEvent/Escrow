@@ -4,6 +4,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import moment from 'moment';
 import { Tabs, Tab } from '@mui/material';
 
+
 import {
     List,
     ListItem,
@@ -14,6 +15,7 @@ import {
     Paper
 } from '@mui/material';
 import { Item } from '../../api/escrow/service.did';
+import OfferItem from '../offers/OfferItem';
 
 
 interface ItemListProps {
@@ -45,51 +47,7 @@ const ItemList: React.FC<ItemListProps> = ({ items, onItemClick, defaultFilter }
             </Tabs>
             <List>
                 {filteredItems.map((item) => (
-                    <ListItem
-                        key={Number(item.id)}
-                        onClick={() => onItemClick?.(item)}
-                        sx={{
-                            cursor: 'pointer',
-                            '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.04)' }
-                        }}
-                    >
-                        {item.image ? (
-                            <Avatar
-                                src={item.image}
-                                variant="rounded"
-                                sx={{ width: 60, height: 60, mr: 2 }}
-                            />
-                        ) : (
-                            <Avatar
-                                variant="rounded"
-                                sx={{ width: 60, height: 60, mr: 2, bgcolor: 'grey.200' }}
-                            >
-                                <ImageIcon sx={{ color: 'grey.400' }} />
-                            </Avatar>
-                        )}
-                        <Box sx={{ width: '100%' }}>
-                            <Box display="flex" justifyContent="space-between" alignItems="center">
-                                <ListItemText
-                                    primary={item.name}
-                                    secondary={`${item.price} ${Object.getOwnPropertyNames(item.currency)[0]}`}
-                                />
-                                <Box display="flex" alignItems="center" gap={2}>
-                                    <Chip
-                                        label={Object.getOwnPropertyNames(item.itype)[0]}
-                                        size="small"
-                                        color="primary"
-                                        variant="outlined"
-                                    />
-                                    <Typography variant="body1">
-
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        {moment.unix(Number(item.listime) / 1000000000).format('MMM DD, YYYY')}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Box>
-                    </ListItem>
+                    <OfferItem key={item.id} offer={item}  />
                 ))}
             </List>
         </Paper>
