@@ -18,10 +18,9 @@ import { useEscrow, useLoading, useGlobalContext } from "../Store"
 import ItemList from "../items/ItemList";
 import { Tabs, Tab } from '@mui/material';
 
-import Inscriptions from "../Inscriptions"
 
-import { Itype, NewOrder, NewSellOrder } from "../../api/escrow/service.did"
-import { Item } from "../../api/escrow/service.did"
+import { Itype, NewOrder, NewSellOrder } from "../../api/escrow/escrow.did"
+import { Item } from "../../api/escrow/escrow.did"
 import {
   LIST_ITEM_NFT,
   LIST_ITEM_COIN,
@@ -52,7 +51,7 @@ export default () => {
   const [offers, setOffers] = React.useState<Item[]>([])
   const [tabValue, setTabValue] = React.useState(0);
   const [page, setPage] = React.useState(1);
-  const [itemsPerPage] = React.useState(10); 
+  const [itemsPerPage] = React.useState(10);
 
   React.useEffect(() => {
 
@@ -78,7 +77,7 @@ export default () => {
   const loadOffers = () => {
     setLoading(true)
     escrow.getItems(BigInt(page)).then((res) => {
-      
+
       setLoading(false)
       setOffers(res)
     })
@@ -144,37 +143,54 @@ export default () => {
 
   return (
     <React.Fragment>
-      {isAuthed && (
-        <Button sx={{ mr: 1, mbb: 1 }} variant="contained" onClick={() => setOpenListForm(true)} startIcon={<AddIcon />}>
-          List My Item
-        </Button>
-      )}
-      {isAuthed && (
-        <Button sx={{ mr: 1, mbb: 1 }} variant="contained" onClick={() => setOpenOrderForm(true)} startIcon={<AddIcon />}>
-          New Escrow Order
-        </Button>
-      )}
-      <Divider />
+
+      <Box sx={{
+        display: 'flex',
+        gap: 2,
+        mb: 3,
+        mt: 1
+      }}>
+        {isAuthed && (
+          <>
+            <Button
+              variant="contained"
+              onClick={() => setOpenListForm(true)}
+              startIcon={<AddIcon />}
+              sx={{ minWidth: '160px' }}
+            >
+              List Item
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => setOpenOrderForm(true)}
+              startIcon={<AddIcon />}
+              sx={{ minWidth: '160px' }}
+            >
+              New Escrow Order
+            </Button>
+          </>
+        )}
+      </Box>
 
       <ItemList items={offers} />
-<Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-    <Button 
-      onClick={() => setPage(p => p - 1)}
-      disabled={page === 1}
-      startIcon={<NavigateBeforeIcon />}
-    >
-      Previous
-    </Button>
-    <Typography sx={{ mx: 2, alignSelf: 'center' }}>
-      Page {page} 
-    </Typography>
-    <Button
-      onClick={() => setPage(p => p + 1)}
-      endIcon={<NavigateNextIcon />}
-    >
-      Next  
-    </Button>
-  </Box>
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+        <Button
+          onClick={() => setPage(p => p - 1)}
+          disabled={page === 1}
+          startIcon={<NavigateBeforeIcon />}
+        >
+          Previous
+        </Button>
+        <Typography sx={{ mx: 2, alignSelf: 'center' }}>
+          Page {page}
+        </Typography>
+        <Button
+          onClick={() => setPage(p => p + 1)}
+          endIcon={<NavigateNextIcon />}
+        >
+          Next
+        </Button>
+      </Box>
       <Dialog
         maxWidth="md"
         fullWidth

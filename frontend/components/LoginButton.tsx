@@ -92,7 +92,7 @@ const DropdownMenu: React.FC = () => {
     authClient.login({
       identityProvider: IDENTITY_PROVIDER_NFID + AUTH_PATH,
       maxTimeToLive: ONE_WEEK_NS,
-      // derivationOrigin: DERIVATION_ORIGION,
+      derivationOrigin: DERIVATION_ORIGION,
       windowOpenerFeatures:
         `left=${window.screen.width / 2 - 525}, ` +
         `top=${window.screen.height / 2 - 705},` +
@@ -104,7 +104,7 @@ const DropdownMenu: React.FC = () => {
   const handleIILogin = async () => {
 
     authClient.login({
-      // derivationOrigin: DERIVATION_ORIGION,
+      derivationOrigin: DERIVATION_ORIGION,
       identityProvider: IDENTITY_PROVIDER_IC,
       maxTimeToLive: ONE_WEEK_NS,
       onSuccess: () => {handleLogin()},

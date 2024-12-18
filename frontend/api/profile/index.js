@@ -4,19 +4,24 @@ import { Actor, HttpAgent } from "@dfinity/agent";
 import { idlFactory } from "./profile.did.js";
 export { idlFactory } from "./profile.did.js";
 
-// CANISTER_ID is replaced by webpack based on node environment
-export const canisterId =  process.env.PROFILE_CANISTER_ID;
+/* CANISTER_ID is replaced by webpack based on node environment
+ * Note: canister environment variable will be standardized as
+ * process.env.CANISTER_ID_<CANISTER_NAME_UPPERCASE>
+ * beginning in dfx 0.15.0
+ */
+export const canisterId =
+  process.env.CANISTER_ID_PROFILE;
 
-export const createActor = (agent,actorOptions) => {
-  // const agent = options.agent || new HttpAgent({ ...options.agentOptions });
+export const createActor = (canisterId, options = {}) => {
+  const agent = options.agent || new HttpAgent({ ...options.agentOptions });
 
-  // if (agent && actorOptions) {
+  // if (options.agent && options.agentOptions) {
   //   console.warn(
   //     "Detected both agent and agentOptions passed to createActor. Ignoring agentOptions and proceeding with the provided agent."
   //   );
   // }
 
-  // Fetch root key for certificate validation during development
+  // // Fetch root key for certificate validation during development
   // if (process.env.DFX_NETWORK !== "ic") {
   //   agent.fetchRootKey().catch((err) => {
   //     console.warn(
@@ -30,8 +35,8 @@ export const createActor = (agent,actorOptions) => {
   return Actor.createActor(idlFactory, {
     agent,
     canisterId,
-    actorOptions,
+    ...options.actorOptions,
   });
 };
 
-export const profile = createActor(canisterId);
+export const profile = canisterId ? createActor(canisterId) : undefined;

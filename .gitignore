@@ -53,3 +53,10 @@ note.txt
 canister_ids.json
 .env
 package-lock.json
+src/declarations/*
+.vscode/*
+frontend/node_modules
+frontend/dist
+frontend/api/*
+./npmrc
+bak

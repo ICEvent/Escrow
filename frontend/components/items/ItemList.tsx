@@ -14,7 +14,7 @@ import {
     Box,
     Paper
 } from '@mui/material';
-import { Item } from '../../api/escrow/service.did';
+import { Item } from '../../api/escrow/escrow.did';
 import OfferItem from '../offers/OfferItem';
 
 

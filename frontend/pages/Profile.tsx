@@ -14,12 +14,12 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 
 
-import { Profile } from "../api/profile/profile.did";
+import { Profile } from "../api/profile/profile.did.d";
 
 import { useGlobalContext, useOneblock } from "../components/Store";
 import { ProfileForm } from "../components/profile/ProfileForm";
 
-const Profile = () => {
+const ProfilePage = () => {
 
   const { state: {
     principal
@@ -30,21 +30,23 @@ const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>();
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    if (principal) loadProfile();
+  }, [principal]);
 
   const loadProfile = () => {
-    oneblock.getMyProfile().then(res => {
-      console.log(res)
-      if (res[0]) {
-        setProfile(res[0]);
-      };
-    });
+    if (oneblock) {
+      oneblock.getMyProfile().then(res => {
+        console.log("profile:", res)
+        if (res[0]) {
+          setProfile(res[0]);
+        };
+      });
+    }
   };
 
   return (
 
-    <ProfileForm profile={profile} reload={loadProfile}/>
+    <ProfileForm profile={profile} reload={loadProfile} />
     // <Card >
     //   {profile &&
     //     <CardMedia
@@ -69,4 +71,4 @@ const Profile = () => {
   )
 }
 
-export { Profile }
+export { ProfilePage }

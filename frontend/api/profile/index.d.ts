@@ -39,8 +39,8 @@ export declare interface CreateActorOptions {
  * @see {@link ActorConfig}
  */
 export declare const createActor: (
-  agent?: Agent,
-  actorOptions?: ActorConfig
+  canisterId: string | Principal,
+  options?: CreateActorOptions
 ) => ActorSubclass<_SERVICE>;
 
 /**

@@ -1,17 +1,15 @@
 import * as React from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import Divider from '@mui/material/Divider';
+
 import ListItemText from '@mui/material/ListItemText';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
-import Avatar from '@mui/material/Avatar';
+
 import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import TextField from '@mui/material/TextField';
-import { Button, Grid } from '@mui/material';
+
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
-import { Comment } from '../../api/escrow/service.did';
+
 import moment from 'moment';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 

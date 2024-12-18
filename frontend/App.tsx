@@ -17,7 +17,7 @@ import { Link, Slider, styled } from '@mui/material'
 import Store from "./components/Store";
 import Header from './header';
 // import Navbar from "./components/Navbar";
-import { Profile } from "./pages/Profile"
+import { ProfilePage } from "./pages/Profile"
 import { Home } from "./pages/Home";
 import Item from "./pages/Item";
 declare global {
@@ -81,7 +81,7 @@ export default () => {
           <Header/>
           <ToastContainer />
           <Routes>
-            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/item/:id" element={<Item />} />
             <Route path="/" element={<Home />} />
           </Routes>

@@ -3,39 +3,39 @@ import React, { createContext, useContext, useReducer } from "react"
 import { Actor, ActorSubclass, HttpAgent, Identity } from "@dfinity/agent"
 import { Principal } from "@dfinity/principal"
 
-import { defaultAgent } from "../lib/canisters"
+import { defaultAgent } from "../lib/canisters";
+import { CANISTER_ONEBLOCK, CANISTER_ESCROW } from "../lib/constants";
 
-import ONEBLOCKService from "../api/profile/profile.did"
+
+import { _SERVICE as ONEBLOCKService } from "../api/profile/profile.did"
+import { _SERVICE as ESCROWService } from "../api/escrow/escrow.did"
+import { _SERVICE as INDEXERService } from "../api/indexer/indexer.did"
+import { _SERVICE as CKETHService } from "../api/cketh/cketh.did"
+
 import * as ONEBLOCK from "../api/profile/index"
-
-import ESCROWService from "../api/escrow/service.did"
 import * as ESCROW from "../api/escrow/index"
-
-import INDEXERService from "../api/indexer/indexer.did";
 import * as INDEXER from "../api/indexer/index";
-
-import CKETHService from "../api/cketh/cketh.did";
 import * as CKETH from "../api/cketh/index";
 
 export type State = {
   agent: HttpAgent
-  cketh: ActorSubclass<CKETHService._SERVICE>
-  oneblock: ActorSubclass<ONEBLOCKService._SERVICE>
-  escrow: ActorSubclass<ESCROWService._SERVICE>
-  indexer: ActorSubclass<INDEXERService._SERVICE>
+  //cketh: ActorSubclass<CKETHService>
+  oneblock: ActorSubclass<ONEBLOCKService>
+  escrow: ActorSubclass<ESCROWService>
+  //indexer: ActorSubclass<INDEXERService>
   isAuthed: boolean
   principal: Principal | null
   loading: Boolean
   menu: String
 }
 
-const createActors = (agent: HttpAgent = defaultAgent) => ({
-  oneblock: ONEBLOCK.createActor(agent),
-  cketh : CKETH.createActor(agent, { actorOptions: {} }),
-  escrow: ESCROW.createActor(agent, { actorOptions: {} }),
-  indexer: INDEXER.createActor(agent, { actorOptions: {} })
+const createActors = (agent: HttpAgent = defaultAgent): {
+  oneblock: ActorSubclass<ONEBLOCKService>,
+  escrow: ActorSubclass<ESCROWService>
+} => ({
+  oneblock: ONEBLOCK.createActor(CANISTER_ONEBLOCK, { agent }) as unknown as ActorSubclass<ONEBLOCKService>,
+  escrow: ESCROW.createActor(CANISTER_ESCROW, { agent }) as unknown as ActorSubclass<ESCROWService>
 });
-
 const initialState: State = {
   ...createActors(),
   agent: defaultAgent,
@@ -120,10 +120,10 @@ export const useGlobalContext = () => {
   return context
 }
 
-export const useCKETH = () => {
-  const context = useGlobalContext()
-  return context.state.cketh
-}
+// export const useCKETH = () => {
+//   const context = useGlobalContext()
+//   return context.state.cketh
+// }
 export const useOneblock = () => {
   const context = useGlobalContext()
   return context.state.oneblock
@@ -134,10 +134,10 @@ export const useEscrow = () => {
   return context.state.escrow
 }
 
-export const useIndexer = () =>{
-  const context = useGlobalContext()
-  return context.state.indexer
-};
+// export const useIndexer = () =>{
+//   const context = useGlobalContext()
+//   return context.state.indexer
+// };
 
 export const useSetAgent = () => {
   const { dispatch } = useGlobalContext()

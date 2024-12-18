@@ -75,14 +75,7 @@ export default () => {
 
   };
 
-  const login = async () => {
-    authClient.login({
-      derivationOrigin: "https://znisf-eqaaa-aaaaj-aabta-cai.raw.ic0.app",
-      identityProvider: IDENTITY_PROVIDER_IC,
-      maxTimeToLive: ONE_WEEK_NS,
-      onSuccess: () => handleAuthenticated(authClient),
-    });
-  };
+
 
   const logout = async () => {
     await authClient.logout();
